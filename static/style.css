@@ -35,17 +35,6 @@ body {
   animation: slideDown 0.6s ease both;
 }
 
-.header::after {
-  content: '';
-  position: absolute;
-  bottom: -3px;
-  left: -100%;
-  width: 60%;
-  height: 3px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
-  animation: shimmer 2.5s 0.8s ease infinite;
-}
-
 .logo {
   position: absolute;
   left: 40px;
@@ -265,7 +254,6 @@ input[type="number"]:focus {
   background: white;
 }
 
-/* BOTONES GENERALES */
 .card > button,
 #calculadora button {
   margin-top: 24px;
@@ -449,9 +437,6 @@ input[type="number"]:focus {
   font-size: 0.92rem;
 }
 
-/* =========================================
-   BOTON FLOTANTE SOPORTE
-========================================= */
 .fab-soporte {
   position: fixed;
   bottom: 28px;
@@ -470,7 +455,6 @@ input[type="number"]:focus {
   box-shadow: 0 6px 24px rgba(207,10,44,0.4);
   z-index: 999;
   transition: all 0.25s;
-  /* resetear herencia de .card > button */
   width: 56px !important;
   padding: 0 !important;
   margin: 0 !important;
@@ -482,9 +466,6 @@ input[type="number"]:focus {
   box-shadow: 0 10px 32px rgba(207,10,44,0.5);
 }
 
-/* =========================================
-   PANEL SOPORTE
-========================================= */
 .panel-soporte {
   position: fixed;
   bottom: 96px;
@@ -625,9 +606,6 @@ input[type="number"]:focus {
   color: white;
 }
 
-/* =========================================
-   ANIMACIONES GLOBALES
-========================================= */
 @keyframes slideDown {
   from { transform: translateY(-100%); opacity: 0; }
   to   { transform: translateY(0);     opacity: 1; }
@@ -636,9 +614,4 @@ input[type="number"]:focus {
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(18px); }
   to   { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes shimmer {
-  0%   { left: -100%; }
-  100% { left: 200%; }
 }
