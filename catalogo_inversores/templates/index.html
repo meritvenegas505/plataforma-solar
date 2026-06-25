@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Solarever</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header class="header">
+  <img src="{{ url_for('static', filename='img/logo_solarever.png') }}" class="logo">
+  <div class="titulo">
+    <h1 class="jump" id="title">Solarever</h1>
+    <p>Energía solar para un futuro mejor</p>
+  </div>
+</header>
+<nav class="menu">
+  <button onclick="mostrar('inicio')">Inicio</button>
+  <button onclick="mostrar('datos')">Datos técnicos</button>
+  <button onclick="mostrar('calculadora')">Calculadora</button>
+</nav>
+<div id="inicio" class="seccion activa">
+  <div class="card">
+    <h2>Hola de nuevo</h2>
+    <p style="color:var(--texto-muted);text-align:center;line-height:1.7;">
+      Biblioteca digital de fichas técnicas y calculadora fotovoltaica.
+    </p>
+    <div style="margin-top:28px;border-radius:14px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.12);border:1px solid var(--borde);">
+      <video
+        width="100%"
+        controls
+        style="display:block;">
+        <source src="{{ url_for('static', filename='solarever.mp4') }}" type="video/mp4">
+      </video>
+    </div>
+  </div>
+</div>
+<div id="datos" class="seccion">
+  <div class="card">
+    <h2>Fichas técnicas</h2>
+    <div style="margin-bottom:25px;text-align:center;">
+      <button onclick="mostrarSub('inv')" class="btnSub">Fichas técnicas inversores</button>
+      <button onclick="mostrarSub('mod')" class="btnSub">Fichas técnicas módulos</button>
+    </div>
+    <div id="sub_inv" style="display:block;">
+      <label><strong>Marca</strong></label>
+      <select id="marcaSelect" onchange="filtrarModelos()">
+        <option value="">Selecciona la marca</option>
+        {% for marca in marcas %}
+        <option value="{{ marca }}">{{ marca }}</option>
+        {% endfor %}
+      </select>
+      <label><strong>Modelo</strong></label>
+      <select id="modeloSelect" onchange="mostrarFicha()">
+        <option value="">Selecciona un modelo</option>
+      </select>
+      <br><br>
+      <input type="text" id="buscador" placeholder="Buscar modelo">
+      <div id="fichaTecnica" style="display:none;"></div>
+    </div>
+    <div id="sub_mod" style="display:none;">
+      <label><strong>Marca</strong></label>
+      <select id="marcaMod" onchange="filtrarModelosMod()">
+        <option value="">Selecciona la marca</option>
+        {% for marca in marcas_mod %}
+        <option value="{{ marca }}">{{ marca }}</option>
+        {% endfor %}
+      </select>
+      <label><strong>Modelo</strong></label>
+      <select id="modeloMod" onchange="mostrarFichaMod()">
+        <option value="">Selecciona un modelo</option>
+      </select>
+      <br><br>
+      <input type="text" id="buscadorMod" placeholder="Buscar módulo">
+      <div id="fichaModulo" style="display:none;"></div>
+    </div>
+  </div>
+</div>
+<!-- CALCULADORA -->
+<div id="calculadora" class="seccion">
+  <!-- ETAPA 1 -->
+  <div class="card" id="etapa1">
+    <h2>Dimensionamiento</h2>
+    <label><strong>¿Cómo deseas ingresar el consumo?</strong></label>
+    <div style="display:flex;gap:10px;margin-top:10px;margin-bottom:16px;flex-wrap:wrap;">
+      <button class="btnSub" id="btnConsumoMensual" onclick="elegirTipoConsumo('mensual')" style="background:var(--rojo);color:white;">Consumo mensual (kWh)</button>
+      <button class="btnSub" id="btnConsumoDiario" onclick="elegirTipoConsumo('diario')">Consumo diario (kWh)</button>
+    </div>
+    <div id="inputConsumoMensual">
+      <label><strong>Consumo mensual (kWh)</strong></label>
+      <input type="number" id="consumoMensual" placeholder="Ejemplo: 450">
+    </div>
+    <div id="inputConsumoDiario" style="display:none;">
+      <label><strong>Consumo diario (kWh)</strong></label>
+      <input type="number" id="consumoDiarioInput" placeholder="Ejemplo: 15">
+    </div>
+    <label><strong>Horas Sol Pico (HSP)</strong></label>
+    <input type="number" step="0.1" id="hsp" placeholder="Ejemplo: 5.5">
+    <label style="margin-top:16px;"><strong>Sobredimensionamiento fotovoltaico (%)</strong></label>
+    <select id="sdrEtapa1" onchange="actualizarSdrEtapa1()">
+      <option value="0" selected>Sin sobredimensionamiento (0%)</option>
+      <option value="5">5%</option>
+      <option value="10">10%</option>
+      <option value="15">15%</option>
+      <option value="20">20%</option>
+      <option value="25">25%</option>
+      <option value="30">30%</option>
+    </select>
+    <br><br>
+    <button onclick="calcularDimensionamiento()">Calcular dimensionamiento</button>
+    <div id="resultadoDim" style="display:none;margin-top:28px;"></div>
+  </div>
+  <!-- ETAPA 2 -->
+  <div class="card" id="etapa2" style="display:none;margin-top:24px;">
+    <h2>Selección de equipos</h2>
+    <p style="color:var(--texto-muted);font-size:0.88rem;margin-bottom:20px;text-align:center;">
+      Selecciona los equipos compatibles con tu dimensionamiento.
+    </p>
+    <!-- MODULO -->
+    <label><strong>Marca del módulo</strong></label>
+    <select id="calcMarcaMod" onchange="filtrarModelosCalc()">
+      <option value="">Selecciona la marca</option>
+      {% for marca in marcas_mod %}
+      <option value="{{ marca }}">{{ marca }}</option>
+      {% endfor %}
+    </select>
+    <label><strong>Modelo del módulo</strong></label>
+    <select id="calcModeloMod" onchange="alElegirModulo()">
+      <option value="">Selecciona un modelo</option>
+    </select>
+    <input type="text" id="buscadorCalcMod" placeholder="O busca el módulo por nombre..."
+      oninput="autocompletarMod(this.value)" autocomplete="off" style="margin-top:8px;">
+    <div id="sugerenciasMod" style="display:none;background:white;border:1.5px solid var(--borde);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,0.1);z-index:100;max-height:220px;overflow-y:auto;margin-top:4px;"></div>
+    <div id="modSeleccionado" style="display:none;margin-top:8px;padding:8px 12px;background:#f0fff4;border-left:3px solid #00A651;border-radius:6px;font-size:0.85rem;color:#1a6b35;font-weight:600;"></div>
+    <label style="margin-top:16px;"><strong>Potencia del módulo (W)</strong></label>
+    <input type="number" id="potenciaPanel" placeholder="Se autocompleta al elegir modelo">
+    <!-- INVERSOR -->
+    <label style="margin-top:20px;"><strong>Marca del inversor</strong></label>
+    <select id="calcMarcaInv" onchange="filtrarModelosInvCalc()">
+      <option value="">Selecciona la marca</option>
+      {% for marca in marcas %}
+      <option value="{{ marca }}">{{ marca }}</option>
+      {% endfor %}
+    </select>
+    <label><strong>Modelo del inversor</strong></label>
+    <select id="calcModeloInv" onchange="alElegirInversorSelect()">
+      <option value="">Selecciona un modelo</option>
+    </select>
+    <input type="text" id="buscadorCalcInv" placeholder="O busca el inversor por nombre..."
+      oninput="autocompletarInv(this.value)" autocomplete="off" style="margin-top:8px;">
+    <div id="sugerenciasInv" style="display:none;background:white;border:1.5px solid var(--borde);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,0.1);z-index:100;max-height:220px;overflow-y:auto;margin-top:4px;"></div>
+    <div id="invSeleccionado" style="display:none;margin-top:8px;padding:8px 12px;background:#f0fff4;border-left:3px solid #00A651;border-radius:6px;font-size:0.85rem;color:#1a6b35;font-weight:600;"></div>
+    <!-- BLOQUE INFO SDR -->
+    <div id="bloqueInfoSdr" style="display:none;margin-top:20px;">
+      <div id="infoComparacion" style="padding:16px 20px;background:#f8f9fa;border:1.5px solid var(--borde);border-radius:12px;text-align:left;margin-bottom:20px;"></div>
+      <div id="btnCalcDirecto" style="display:none;margin-top:20px;">
+        <button onclick="calcularSolar()">Calcular sistema</button>
+      </div>
+    </div>
+    <div id="resultadoSolar" style="margin-top:24px;"></div>
+    <div id="selectorEscenario" style="display:none;margin-top:20px;"></div>
+    <div id="resultadoMPPT" style="margin-top:24px;"></div>
+    <div id="btnPdfContainer" style="display:none;margin-top:16px;">
+      <button onclick="exportarPDF()">Exportar PDF</button>
+    </div>
+  </div>
+</div>
+<!-- SOPORTE -->
+<button class="fab-soporte" onclick="toggleSoporte()">💬</button>
+<div id="panelSoporte" class="panel-soporte" style="display:none;">
+  <div class="panel-soporte-header">
+    <span>Soporte Técnico</span>
+    <button class="panel-close" onclick="toggleSoporte()">✕</button>
+  </div>
+  <div class="panel-soporte-body">
+    <div class="contacto-item">
+      <div class="contacto-nombre">Edgar Herrera</div>
+      <div class="contacto-cargo">Gerente Soporte Técnico</div>
+      <a href="tel:5580079165" class="contacto-tel">55 8007 9165</a>
+    </div>
+    <div class="contacto-item">
+      <div class="contacto-nombre">Noemi Ortiz</div>
+      <div class="contacto-cargo">Coordinador Soporte Técnico</div>
+      <a href="tel:5625514544" class="contacto-tel">56 2551 4544</a>
+    </div>
+    <div class="contacto-item">
+      <div class="contacto-nombre">Rodrigo García</div>
+      <div class="contacto-cargo">Coordinador Soporte Técnico</div>
+      <a href="tel:5651007072" class="contacto-tel">56 5100 7072</a>
+    </div>
+    <div class="contacto-item">
+      <div class="contacto-nombre">Pedro Leal</div>
+      <div class="contacto-cargo">Coordinador Soporte Técnico</div>
+      <a href="tel:5591990501" class="contacto-tel">55 9199 0501</a>
+    </div>
+    <div class="contacto-item">
+      <div class="contacto-nombre">Pablo Reyes <span style="font-size:0.75rem;color:#aaa;">(USA)</span></div>
+      <div class="contacto-cargo">Coordinador Soporte Técnico</div>
+      <a href="tel:+19563086594" class="contacto-tel">+1 (956) 308-6594</a>
+    </div>
+    <a href="https://wa.me/5580079165" target="_blank" class="btn-whatsapp">💬 WhatsApp Solarever</a>
+    <a href="mailto:contacto@solarever.com" class="btn-correo">✉️ contacto@solarever.com</a>
+  </div>
+</div>
+<script>
+/* TITULO ANIMADO */
+const title = document.getElementById("title");
+const text = title.innerText;
+title.innerHTML = "";
+text.split("").forEach((c, i) => {
+  const s = document.createElement("span");
+  s.innerText = c;
+  s.style.animationDelay = (i * 0.1) + "s";
+  title.appendChild(s);
+});
+function mostrar(id){
+  document.querySelectorAll(".seccion").forEach(sec => sec.classList.remove("activa"));
+  document.getElementById(id).classList.add("activa");
+}
+function mostrarSub(tipo){
+  document.getElementById("sub_inv").style.display = "none";
+  document.getElementById("sub_mod").style.display = "none";
+  if(tipo === "inv") document.getElementById("sub_inv").style.display = "block";
+  if(tipo === "mod") document.getElementById("sub_mod").style.display = "block";
+}
+const datos     = {{ datos | tojson }};
+const datos_mod = {{ datos_mod | tojson }};
+const marcaSelect  = document.getElementById("marcaSelect");
+const modeloSelect = document.getElementById("modeloSelect");
+/* CATALOGO — inversores */
+function filtrarModelos(){
+  modeloSelect.innerHTML = '<option value="">Selecciona un modelo</option>';
+  document.getElementById("fichaTecnica").style.display = "none";
+  datos.forEach(d => {
+    if(d.Marca === marcaSelect.value)
+      modeloSelect.innerHTML += `<option value="${d.Modelo}">${d.Modelo}</option>`;
+  });
+}
+function mostrarFicha(){
+  const modelo = modeloSelect.value;
+  if(!modelo) return;
+  const inv = datos.find(d => d.Modelo === modelo);
+  if(!inv) return;
+  let contenido = `
+    ${inv["Imagen"] ? `<div class="imgContainer"><img src="/static/img/${inv["Imagen"]}" class="imagenFicha" onerror="this.style.display='none'"></div>` : ""}
+    <div class="bloque">
+      <div class="bloqueTitulo">INVERSOR</div>
+      <table class="tablaTecnica">
+        <tr><th>Marca</th><td>${inv["Marca"]||""}</td></tr>
+        <tr><th>Modelo</th><td>${inv["Modelo"]||""}</td></tr>
+        <tr><th>Eficiencia</th><td>${inv["Eficiencia"]||""}</td></tr>
+        <tr><th>Máxima Potencia FV</th><td>${inv["Máxima Potencia FV"]||""}</td></tr>
+        <tr><th>Máximo Voltaje CD</th><td>${inv["Máximo Voltaje CD"]||""}</td></tr>
+        <tr><th>Voltaje Nominal</th><td>${inv["Voltaje Nominal"]||""}</td></tr>
+        <tr><th>Rango MPPT</th><td>${inv["Rango De Voltaje De MPPT"]||""}</td></tr>
+        <tr><th>Número MPPT</th><td>${inv["Número De MPPT"]||""}</td></tr>
+        <tr><th>Cadenas por MPPT</th><td>${inv["Cadenas por MPPT"]||""}</td></tr>
+        <tr><th>Corriente MPPT</th><td>${inv["Máxima Corriente Por MPPT"]||""}</td></tr>
+        <tr><th>Isc MPPT</th><td>${inv["Corriente De Cortocircuito Por MPPT"]||""}</td></tr>
+        <tr><th>Potencia Nominal CA</th><td>${inv["Potencia Nominal CA"]||""}</td></tr>
+        <tr><th>Frecuencia</th><td>${inv["Frecuencia De Red"]||""}</td></tr>
+        <tr><th>Voltaje CA</th><td>${inv["Voltaje Nominal CA"]||""}</td></tr>
+        <tr><th>Corriente Salida</th><td>${inv["Corriente Máxima De Salida"]||""}</td></tr>
+        <tr><th>Protección IP</th><td>${inv["Grado De Protección"]||""}</td></tr>
+        <tr><th>Enfriamiento</th><td>${inv["Enfriamiento"]||""}</td></tr>
+        <tr><th>Peso</th><td>${inv["Peso y Dimensiones"]||""}</td></tr>
+      </table>
+    </div>`;
+  const ficha = document.getElementById("fichaTecnica");
+  ficha.innerHTML = contenido;
+  ficha.style.display = "block";
+}
+/* CATALOGO — modulos */
+function filtrarModelosMod(){
+  let marca = document.getElementById("marcaMod").value;
+  let sel   = document.getElementById("modeloMod");
+  sel.innerHTML = '<option value="">Selecciona un modelo</option>';
+  document.getElementById("fichaModulo").style.display = "none";
+  datos_mod.forEach(m => {
+    if(m["Marca"] === marca)
+      sel.innerHTML += `<option value="${m["Modelo"]}">${m["Modelo"]}</option>`;
+  });
+}
+function mostrarFichaMod(){
+  let modelo = document.getElementById("modeloMod").value;
+  if(!modelo) return;
+  let mod = datos_mod.find(m => m["Modelo"] === modelo);
+  if(!mod) return;
+  let contenido = `
+    ${mod["Imagen"] ? `<div class="imgContainer"><img src="/static/img/${mod["Imagen"]}" class="imagenFicha" onerror="this.style.display='none'"></div>` : ""}
+    <div class="bloque">
+      <div class="bloqueTitulo">MÓDULO</div>
+      <table class="tablaTecnica">
+        <tr><th>Marca</th><td>${mod["Marca"]||""}</td></tr>
+        <tr><th>Modelo</th><td>${mod["Modelo"]||""}</td></tr>
+        <tr><th>Potencia</th><td>${mod["Potencia (W)"]||""} W</td></tr>
+        <tr><th>Vmp</th><td>${mod["Vmp (V)"]||""} V</td></tr>
+        <tr><th>Voc</th><td>${mod["Voc (V)"]||""} V</td></tr>
+        <tr><th>Imp</th><td>${mod["Imp (A)"]||""} A</td></tr>
+        <tr><th>Isc</th><td>${mod["Isc (A)"]||""} A</td></tr>
+        <tr><th>Eficiencia</th><td>${mod["module efficiency %"]||""} %</td></tr>
+      </table>
+    </div>`;
+  const ficha = document.getElementById("fichaModulo");
+  ficha.innerHTML = contenido;
+  ficha.style.display = "block";
+}
+/* BUSCADORES CATALOGO */
+document.getElementById("buscador").addEventListener("keypress", function(e){
+  if(e.key === "Enter"){
+    let texto = this.value.toLowerCase();
+    let resultado = datos.find(d => (d.Modelo||"").toLowerCase().includes(texto));
+    if(resultado){
+      modeloSelect.innerHTML = `<option value="${resultado.Modelo}" selected>${resultado.Modelo}</option>`;
+      mostrarFicha();
+    }
+  }
+});
+document.getElementById("buscadorMod").addEventListener("keypress", function(e){
+  if(e.key === "Enter"){
+    let texto = this.value.toLowerCase();
+    let resultado = datos_mod.find(m => (m["Modelo"]||"").toLowerCase().includes(texto));
+    if(resultado){
+      document.getElementById("modeloMod").innerHTML =
+        `<option value="${resultado["Modelo"]}" selected>${resultado["Modelo"]}</option>`;
+      mostrarFichaMod();
+    }
+  }
+});
+/* =========================================
+   TIPO DE CONSUMO
+========================================= */
+let tipoConsumo = "mensual";
+function elegirTipoConsumo(tipo){
+  tipoConsumo = tipo;
+  document.getElementById("inputConsumoMensual").style.display = tipo === "mensual" ? "block" : "none";
+  document.getElementById("inputConsumoDiario").style.display  = tipo === "diario"  ? "block" : "none";
+  document.getElementById("btnConsumoMensual").style.background = tipo === "mensual" ? "var(--rojo)" : "";
+  document.getElementById("btnConsumoMensual").style.color      = tipo === "mensual" ? "white" : "";
+  document.getElementById("btnConsumoDiario").style.background  = tipo === "diario"  ? "var(--rojo)" : "";
+  document.getElementById("btnConsumoDiario").style.color       = tipo === "diario"  ? "white" : "";
+}
+/* =========================================
+   PARSERS
+========================================= */
+function parsearW(str){
+  return parseFloat(String(str||"").replace(/,/g,"").replace(/[^0-9.]/g,"")) || 0;
+}
+function notaTecnica(tipo, msg){
+  const estilos = {
+    error: "background:#fff0f0;border-left:3px solid #CF0A2C;color:#CF0A2C;",
+    warn:  "background:#fff8e1;border-left:3px solid #f0a500;color:#7a5c00;",
+    ok:    "background:#f0fff4;border-left:3px solid #00A651;color:#1a6b35;",
+    info:  "background:#f0f4ff;border-left:3px solid #1F6FB2;color:#1a3a6b;"
+  };
+  let iconos = { error:"❌", warn:"⚠️", ok:"✅", info:"ℹ️" };
+  return `<div style="margin-top:6px;padding:6px 10px;border-radius:6px;font-size:0.78rem;font-weight:600;${estilos[tipo]}">${iconos[tipo]} ${msg}</div>`;
+}
+/* =========================================
+   SDR ETAPA 1 — actualizar en tiempo real
+========================================= */
+function obtenerSdrVal(){
+  let pct = parseInt(document.getElementById("sdrEtapa1").value) || 0;
+  return 1 + (pct / 100);
+}
+function actualizarSdrEtapa1(){
+  /* Si ya hay resultados en Etapa 1 mostrados, los recalcula */
+  let res = document.getElementById("resultadoDim");
+  if(res.style.display !== "none" && res.innerHTML.trim() !== ""){
+    calcularDimensionamiento();
+  }
+}
+/* =========================================
+   FILTRAR MODULOS (calculadora)
+========================================= */
+let modSeleccionadoData = null;
+function parsearNumeros(str){
+  return String(str||"").split("/").map(s => parseFloat(s.replace(/[^0-9.]/g,""))).filter(n => !isNaN(n));
+}
+function parsearRangoMPPT(str){
+  let nums = String(str||"").match(/[\d.]+/g);
+  if(nums && nums.length >= 2) return { min: parseFloat(nums[0]), max: parseFloat(nums[1]) };
+  return { min: 0, max: 0 };
+}
+function filtrarModelosCalc(){
+  let marca = document.getElementById("calcMarcaMod").value;
+  let sel   = document.getElementById("calcModeloMod");
+  sel.innerHTML = '<option value="">Selecciona un modelo</option>';
+  document.getElementById("potenciaPanel").value = "";
+  document.getElementById("modSeleccionado").style.display = "none";
+  modSeleccionadoData = null;
+  datos_mod.forEach(m => {
+    if(m["Marca"] === marca)
+      sel.innerHTML += `<option value="${m["Modelo"]}">${m["Modelo"]}</option>`;
+  });
+}
+function alElegirModulo(){
+  let modelo = document.getElementById("calcModeloMod").value;
+  if(!modelo) return;
+  let mod = datos_mod.find(m => m["Modelo"] === modelo);
+  if(!mod) return;
+  modSeleccionadoData = mod;
+  document.getElementById("potenciaPanel").value = mod["Potencia (W)"] || "";
+  document.getElementById("buscadorCalcMod").value = "";
+  document.getElementById("modSeleccionado").innerHTML =
+    `✅ ${mod["Marca"].charAt(0).toUpperCase()+mod["Marca"].slice(1)} — ${mod["Modelo"]} · ${mod["Potencia (W)"]}W`;
+  document.getElementById("modSeleccionado").style.display = "block";
+}
+/* =========================================
+   FILTRAR INVERSORES (calculadora)
+========================================= */
+let invSeleccionadoData = null;
+let _mpptData = {};
+function filtrarModelosInvCalc(){
+  let marca = document.getElementById("calcMarcaInv").value;
+  let sel   = document.getElementById("calcModeloInv");
+  sel.innerHTML = '<option value="">Selecciona un modelo</option>';
+  document.getElementById("invSeleccionado").style.display = "none";
+  invSeleccionadoData = null;
+  resetearSdrUI();
+  datos.forEach(d => {
+    if(d.Marca === marca)
+      sel.innerHTML += `<option value="${d.Modelo}">${d.Modelo}</option>`;
+  });
+}
+function alElegirInversorSelect(){
+  let modelo = document.getElementById("calcModeloInv").value;
+  if(!modelo) return;
+  let inv = datos.find(d => d.Modelo === modelo);
+  if(!inv) return;
+  invSeleccionadoData = inv;
+  let potInvKw = parsearW(inv["Potencia Nominal CA"]) / 1000;
+  document.getElementById("buscadorCalcInv").value = "";
+  document.getElementById("invSeleccionado").innerHTML =
+    `✅ ${inv["Marca"].charAt(0).toUpperCase()+inv["Marca"].slice(1)} — ${inv["Modelo"]} · ${potInvKw.toFixed(2)} kW`;
+  document.getElementById("invSeleccionado").style.display = "block";
+  alElegirInversor(inv);
+}
+/* =========================================
+   AUTOCOMPLETADO MODULO
+========================================= */
+function autocompletarMod(texto){
+  let lista = document.getElementById("sugerenciasMod");
+  if(!texto || texto.length < 2){
+    lista.style.display = "none";
+    /* Si borran el texto pero ya habia un modulo seleccionado, no lo limpiamos */
+    return;
+  }
+  let resultados = datos_mod.filter(m =>
+    (m["Modelo"]||"").toLowerCase().includes(texto.toLowerCase())
+  ).slice(0, 10);
+  if(resultados.length === 0){ lista.style.display = "none"; return; }
+  lista.innerHTML = resultados.map(m => {
+    let modelo = m["Modelo"].replace(/\\/g,"\\\\").replace(/'/g,"\\'");
+    return `
+      <div onclick="seleccionarMod('${modelo}')"
+        style="padding:10px 14px;cursor:pointer;font-size:0.88rem;border-bottom:1px solid #f0f0f0;"
+        onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='white'">
+        <span style="font-weight:600;color:#1a1a1a;">${m["Modelo"]}</span>
+        <span style="color:#aaa;font-size:0.78rem;margin-left:8px;">${m["Marca"]} · ${m["Potencia (W)"]}W</span>
+      </div>`;
+  }).join("");
+  lista.style.display = "block";
+}
+function seleccionarMod(modelo){
+  let mod = datos_mod.find(m => m["Modelo"] === modelo);
+  if(!mod) return;
+  modSeleccionadoData = mod;
+  document.getElementById("buscadorCalcMod").value = modelo;
+  document.getElementById("sugerenciasMod").style.display = "none";
+  document.getElementById("potenciaPanel").value = mod["Potencia (W)"] || "";
+  document.getElementById("calcMarcaMod").value = mod["Marca"] || "";
+  filtrarModelosCalc();
+  setTimeout(() => {
+    document.getElementById("calcModeloMod").value = modelo;
+  }, 50);
+  document.getElementById("modSeleccionado").innerHTML =
+    `✅ ${mod["Marca"].charAt(0).toUpperCase()+mod["Marca"].slice(1)} — ${mod["Modelo"]} · ${mod["Potencia (W)"]}W`;
+  document.getElementById("modSeleccionado").style.display = "block";
+}
+/* =========================================
+   AUTOCOMPLETADO INVERSOR
+========================================= */
+function autocompletarInv(texto){
+  let lista = document.getElementById("sugerenciasInv");
+  if(!texto || texto.length < 2){
+    lista.style.display = "none";
+    /* Si borran el texto pero ya habia un inversor seleccionado, no lo limpiamos */
+    return;
+  }
+  let resultados = datos.filter(d =>
+    (d.Modelo||"").toLowerCase().includes(texto.toLowerCase())
+  ).slice(0, 10);
+  if(resultados.length === 0){ lista.style.display = "none"; return; }
+  lista.innerHTML = resultados.map(d => {
+    let modelo = d["Modelo"].replace(/\\/g,"\\\\").replace(/'/g,"\\'");
+    let potKw = parsearW(d["Potencia Nominal CA"]) / 1000;
+    return `
+      <div onclick="seleccionarInv('${modelo}')"
+        style="padding:10px 14px;cursor:pointer;font-size:0.88rem;border-bottom:1px solid #f0f0f0;"
+        onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='white'">
+        <span style="font-weight:600;color:#1a1a1a;">${d["Modelo"]}</span>
+        <span style="color:#aaa;font-size:0.78rem;margin-left:8px;">${d["Marca"]} · ${potKw.toFixed(2)} kW</span>
+      </div>`;
+  }).join("");
+  lista.style.display = "block";
+}
+function seleccionarInv(modelo){
+  let inv = datos.find(d => d.Modelo === modelo);
+  if(!inv) return;
+  invSeleccionadoData = inv;
+  document.getElementById("buscadorCalcInv").value = modelo;
+  document.getElementById("sugerenciasInv").style.display = "none";
+  document.getElementById("calcMarcaInv").value = inv["Marca"] || "";
+  filtrarModelosInvCalc();
+  setTimeout(() => {
+    document.getElementById("calcModeloInv").value = modelo;
+  }, 50);
+  let potInvKw = parsearW(inv["Potencia Nominal CA"]) / 1000;
+  document.getElementById("invSeleccionado").innerHTML =
+    `✅ ${inv["Marca"].charAt(0).toUpperCase()+inv["Marca"].slice(1)} — ${inv["Modelo"]} · ${potInvKw.toFixed(2)} kW`;
+  document.getElementById("invSeleccionado").style.display = "block";
+  alElegirInversor(inv);
+}
+document.addEventListener("click", function(e){
+  if(!e.target.closest("#buscadorCalcMod") && !e.target.closest("#sugerenciasMod"))
+    document.getElementById("sugerenciasMod").style.display = "none";
+  if(!e.target.closest("#buscadorCalcInv") && !e.target.closest("#sugerenciasInv"))
+    document.getElementById("sugerenciasInv").style.display = "none";
+});
+/* =========================================
+   RESET
+========================================= */
+function resetearSdrUI(){
+  document.getElementById("bloqueInfoSdr").style.display = "none";
+  document.getElementById("btnCalcDirecto").style.display = "none";
+  document.getElementById("resultadoSolar").innerHTML = "";
+  document.getElementById("btnPdfContainer").style.display = "none";
+  document.getElementById("selectorEscenario").style.display = "none";
+  document.getElementById("resultadoMPPT").innerHTML = "";
+}
+/* =========================================
+   AL ELEGIR INVERSOR
+========================================= */
+function alElegirInversor(invData){
+  if(!invData){ resetearSdrUI(); return; }
+  let consumo = tipoConsumo === "mensual"
+    ? parseFloat(document.getElementById("consumoMensual").value) || 0
+    : parseFloat(document.getElementById("consumoDiarioInput").value) * 30 || 0;
+  let hsp    = parseFloat(document.getElementById("hsp").value) || 0;
+  let sdrPct = parseInt(document.getElementById("sdrEtapa1").value) || 0;
+  let sdrVal = 1 + (sdrPct / 100);
+  if(consumo <= 0 || hsp <= 0){ resetearSdrUI(); return; }
+  let consumoDiario = consumo / 30;
+  let potInvW  = parsearW(invData["Potencia Nominal CA"]);
+  let potInvKw = potInvW / 1000;
+  const PR = 0.80;
+  let potReqConPR  = (consumoDiario / PR) / hsp;
+  let potReqFinal  = potReqConPR * sdrVal;
+  let labelPotReq  = sdrPct > 0
+    ? `Potencia requerida (con PR 80% + SDR ${sdrPct}%)`
+    : `Potencia requerida (con PR 80%)`;
+  let estadoColor = potInvKw >= potReqConPR ? "#00A651" : "var(--rojo)";
+  let estadoTexto = potInvKw >= potReqConPR
+    ? "✅ El inversor cumple con la potencia requerida"
+    : "⚠️ El inversor NO cumple — capacidad insuficiente";
+  let ratio = potInvKw > 0 ? potInvKw / potReqConPR : 0;
+  let notaComp = ratio > 10
+    ? notaTecnica("warn", `Inversor sobredimensionado para el consumo indicado (ratio ${ratio.toFixed(1)}:1). Verifique que la selección corresponde al proyecto correcto.`)
+    : "";
+  document.getElementById("infoComparacion").innerHTML = `
+    <p style="font-size:0.72rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#aaa;margin-bottom:12px;">Comparación de potencias</p>
+    <table style="width:100%;border-collapse:collapse;">
+      <tr style="border-bottom:1px solid #eee;">
+        <td style="padding:8px 0;font-size:0.85rem;color:#888;">${labelPotReq}</td>
+        <td style="padding:8px 0;font-size:0.85rem;font-weight:700;text-align:right;">${potReqFinal.toFixed(2)} kW</td>
+      </tr>
+      <tr>
+        <td style="padding:8px 0;font-size:0.85rem;color:#888;">Potencia nominal del inversor</td>
+        <td style="padding:8px 0;font-size:0.85rem;font-weight:700;text-align:right;">${potInvKw > 0 ? potInvKw.toFixed(2) + " kW" : "No disponible"}</td>
+      </tr>
+    </table>
+    <p style="margin-top:12px;font-size:0.85rem;font-weight:600;color:${estadoColor};">${estadoTexto}</p>
+    ${notaComp}
+  `;
+  document.getElementById("bloqueInfoSdr").style.display = "block";
+  document.getElementById("btnCalcDirecto").style.display = "block";
+  document.getElementById("resultadoSolar").innerHTML = "";
+  document.getElementById("btnPdfContainer").style.display = "none";
+  document.getElementById("selectorEscenario").style.display = "none";
+  document.getElementById("resultadoMPPT").innerHTML = "";
+  setTimeout(() => document.getElementById("bloqueInfoSdr").scrollIntoView({behavior:"smooth"}), 150);
+}
+/* =========================================
+   ETAPA 1 — DIMENSIONAMIENTO
+========================================= */
+function calcularDimensionamiento(){
+  let consumoMensual = 0;
+  let consumoDiario  = 0;
+  if(tipoConsumo === "mensual"){
+    consumoMensual = parseFloat(document.getElementById("consumoMensual").value) || 0;
+    consumoDiario  = consumoMensual / 30;
+  } else {
+    consumoDiario  = parseFloat(document.getElementById("consumoDiarioInput").value) || 0;
+    consumoMensual = consumoDiario * 30;
+  }
+  let hsp    = parseFloat(document.getElementById("hsp").value) || 0;
+  let sdrPct = parseInt(document.getElementById("sdrEtapa1").value) || 0;
+  let sdrVal = 1 + (sdrPct / 100);
+  if(consumoMensual <= 0 || hsp <= 0){
+    document.getElementById("resultadoDim").innerHTML = `
+      <div class="bloque"><div class="bloqueTitulo">ERROR</div><p>Ingresa el consumo y las horas sol pico.</p></div>`;
+    document.getElementById("resultadoDim").style.display = "block";
+    document.getElementById("etapa2").style.display = "none";
+    return;
+  }
+  const PR = 0.80;
+  let consumoDiarioPR  = consumoDiario / PR;
+  let potReqSinPR      = consumoDiario / hsp;
+  let potReqConPR      = consumoDiarioPR / hsp;
+  let potReqConSDR     = potReqConPR * sdrVal;
+  let filaSdr = sdrPct > 0 ? `
+    <tr style="background:#f0f4ff;">
+      <th>Potencia FV mínima recomendada (con SDR ${sdrPct}%)</th>
+      <td>
+        <strong>${potReqConSDR.toFixed(2)} kW</strong>
+        <span style="font-size:0.75rem;color:#888;display:block;">Para dimensionar los módulos fotovoltaicos</span>
+      </td>
+    </tr>` : "";
+  document.getElementById("resultadoDim").innerHTML = `
+    <div class="bloque">
+      <div class="bloqueTitulo">DIMENSIONAMIENTO</div>
+      <table class="tablaTecnica">
+        <tr><th>Consumo mensual</th><td>${consumoMensual.toFixed(2)} kWh</td></tr>
+        <tr><th>Consumo diario</th><td>${consumoDiario.toFixed(2)} kWh</td></tr>
+        <tr style="background:#fffde7;">
+          <th>Consumo diario con PR (÷ 0.80)</th>
+          <td>
+            <strong>${consumoDiarioPR.toFixed(2)} kWh</strong>
+            <span style="font-size:0.75rem;color:#888;display:block;">Factor de rendimiento del sistema (PR = 80%)</span>
+          </td>
+        </tr>
+      </table>
+      <div style="margin-top:16px;display:flex;gap:12px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:200px;padding:14px;background:#f8f9fa;border-radius:10px;border:1.5px solid var(--borde);">
+          <div style="font-size:0.7rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#aaa;margin-bottom:8px;">Potencia mínima del inversor</div>
+          <div style="font-size:1.1rem;font-weight:700;color:#1a1a1a;">${potReqConPR.toFixed(2)} kW</div>
+          <div style="font-size:0.75rem;color:#aaa;margin-top:4px;">Con PR 80% aplicado</div>
+        </div>
+        <div style="flex:1;min-width:200px;padding:14px;background:#f0fff4;border-radius:10px;border:2px solid #00A651;">
+          <div style="font-size:0.7rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#00A651;margin-bottom:8px;">Potencia FV mínima recomendada${sdrPct > 0 ? " (con SDR "+sdrPct+"%)" : ""}</div>
+          <div style="font-size:1.1rem;font-weight:700;color:#1a1a1a;">${potReqConSDR.toFixed(2)} kW</div>
+          <div style="font-size:0.75rem;color:#888;margin-top:4px;">Para dimensionar los módulos fotovoltaicos</div>
+        </div>
+      </div>
+      <div style="margin-top:14px;padding:12px 16px;background:#f0fff4;border-left:4px solid #00A651;border-radius:8px;font-size:0.85rem;color:#1a6b35;text-align:left;">
+        Con estos datos ya puedes seleccionar los equipos del sistema.
+      </div>
+    </div>`;
+  document.getElementById("resultadoDim").style.display = "block";
+  document.getElementById("etapa2").style.display = "block";
+  resetearSdrUI();
+  setTimeout(() => document.getElementById("etapa2").scrollIntoView({behavior:"smooth"}), 200);
+}
+/* =========================================
+   ETAPA 2 — CALCULAR SISTEMA
+========================================= */
+function calcularSolar(){
+  let consumoMensual = 0;
+  let consumoDiario  = 0;
+  if(tipoConsumo === "mensual"){
+    consumoMensual = parseFloat(document.getElementById("consumoMensual").value) || 0;
+    consumoDiario  = consumoMensual / 30;
+  } else {
+    consumoDiario  = parseFloat(document.getElementById("consumoDiarioInput").value) || 0;
+    consumoMensual = consumoDiario * 30;
+  }
+  let hsp           = parseFloat(document.getElementById("hsp").value) || 0;
+  let potenciaPanel = parseFloat(document.getElementById("potenciaPanel").value) || 0;
+  let sdrPct        = parseInt(document.getElementById("sdrEtapa1").value) || 0;
+  let sdrVal        = 1 + (sdrPct / 100);
+  if(consumoMensual <= 0 || hsp <= 0 || potenciaPanel <= 0){
+    document.getElementById("resultadoSolar").innerHTML = `
+      <div class="bloque"><div class="bloqueTitulo">ERROR</div><p>Completa todos los campos obligatorios.</p></div>`;
+    return;
+  }
+  if(!modSeleccionadoData){
+    let modeloMod = document.getElementById("calcModeloMod").value;
+    if(modeloMod) modSeleccionadoData = datos_mod.find(m => m["Modelo"] === modeloMod) || null;
+  }
+  if(!invSeleccionadoData){
+    let modeloInv = document.getElementById("calcModeloInv").value;
+    if(modeloInv) invSeleccionadoData = datos.find(d => d["Modelo"] === modeloInv) || null;
+  }
+  if(!modSeleccionadoData || !invSeleccionadoData){
+    document.getElementById("resultadoSolar").innerHTML = `
+      <div class="bloque"><div class="bloqueTitulo">ERROR</div><p>Selecciona un módulo e inversor.</p></div>`;
+    return;
+  }
+  const PR = 0.80;
+  let consumoDiarioPR = consumoDiario / PR;
+  let potReqConPR     = consumoDiarioPR / hsp;
+  let potReqW         = potReqConPR * 1000;
+  let invData  = invSeleccionadoData;
+  let potInvW  = parsearW(invData["Potencia Nominal CA"]);
+  let potInvKw = potInvW / 1000;
+  let pfvMaxW  = potInvW * 1.50;
+  /* SDR viene de Etapa 1 */
+  let potFvObjetivoW  = potReqW * sdrVal;
+  let potFvObjetivoKw = potFvObjetivoW / 1000;
+  let superaPfvMax    = potFvObjetivoW > pfvMaxW;
+  let modulosExactos  = potFvObjetivoW / potenciaPanel;
+  /* ESCENARIO A */
+  let modA       = Math.floor(modulosExactos);
+  let potInstAW  = modA * potenciaPanel;
+  let potInstAKw = potInstAW / 1000;
+  let sdrRealA   = potReqW > 0 ? ((potInstAW - potReqW) / potReqW) * 100 : 0;
+  let sdrTotalA  = 100 + sdrRealA;
+  let genA       = (potInstAKw * hsp * 30).toFixed(0);
+  let bloqA      = sdrRealA > 50 || potInstAW > pfvMaxW;
+  let difSdrA    = Math.abs(sdrRealA - sdrPct);
+  let notasA = "";
+  if(potInstAW > pfvMaxW)
+    notasA += notaTecnica("error", `P_FV instalada (${potInstAKw.toFixed(2)} kW) supera P_FV_max (${(pfvMaxW/1000).toFixed(2)} kW). Riesgo de daño al inversor.`);
+  else if(sdrRealA > 40)
+    notasA += notaTecnica("warn", `SDR real (${sdrRealA.toFixed(1)}%) supera el 40%. Riesgo elevado de clipping.`);
+  else
+    notasA += notaTecnica("ok", `P_FV instalada dentro del rango permitido.`);
+  if(difSdrA > 5)
+    notasA += notaTecnica("info", `SDR real (${sdrRealA.toFixed(1)}%) difiere ${difSdrA.toFixed(1)}% del SDR propuesto por redondeo.`);
+  /* ESCENARIO B */
+  let modB       = Math.ceil(modulosExactos);
+  let potInstBW  = modB * potenciaPanel;
+  let potInstBKw = potInstBW / 1000;
+  let sdrRealB   = potReqW > 0 ? ((potInstBW - potReqW) / potReqW) * 100 : 0;
+  let sdrTotalB  = 100 + sdrRealB;
+  let genB       = (potInstBKw * hsp * 30).toFixed(0);
+  let bloqB      = sdrRealB > 50 || potInstBW > pfvMaxW;
+  let difSdrB    = Math.abs(sdrRealB - sdrPct);
+  let notasB = "";
+  if(potInstBW > pfvMaxW)
+    notasB += notaTecnica("error", `P_FV instalada (${potInstBKw.toFixed(2)} kW) supera P_FV_max (${(pfvMaxW/1000).toFixed(2)} kW). Riesgo de daño al inversor.`);
+  else if(sdrRealB > 40)
+    notasB += notaTecnica("warn", `SDR real (${sdrRealB.toFixed(1)}%) supera el 40%. Riesgo elevado de clipping.`);
+  else
+    notasB += notaTecnica("ok", `P_FV instalada dentro del rango permitido.`);
+  if(difSdrB > 5)
+    notasB += notaTecnica("info", `SDR real (${sdrRealB.toFixed(1)}%) difiere ${difSdrB.toFixed(1)}% del SDR propuesto por redondeo.`);
+  let modData = modSeleccionadoData;
+  let nombreMarcaMod = modData ? modData.Marca.charAt(0).toUpperCase() + modData.Marca.slice(1) : "";
+  let nombreMarcaInv = invData ? invData.Marca.charAt(0).toUpperCase() + invData.Marca.slice(1) : "";
+  let filaModulo = modData ? `
+    <tr><th>Módulo seleccionado</th><td>
+      <a href="#" onclick="irACatalogoMod('${modData.Marca}','${modData.Modelo}')" style="color:var(--rojo);font-weight:600;text-decoration:none;">${nombreMarcaMod} — ${modData.Modelo}</a>
+    </td></tr>` : "";
+  let filaInversor = invData ? `
+    <tr><th>Inversor seleccionado</th><td>
+      <a href="#" onclick="irACatalogoInv('${invData.Marca}','${invData.Modelo}')" style="color:var(--rojo);font-weight:600;text-decoration:none;">${nombreMarcaInv} — ${invData.Modelo}</a>
+    </td></tr>` : "";
+  let notasGenerales = "";
+  if(superaPfvMax)
+    notasGenerales += notaTecnica("error", `P_FV objetivo (${potFvObjetivoKw.toFixed(2)} kW) supera P_FV_max (${(pfvMaxW/1000).toFixed(2)} kW). Reduzca el SDR o seleccione un inversor mayor.`);
+  if(potInvKw > 0 && potInvKw / potReqConPR > 10)
+    notasGenerales += notaTecnica("warn", `El inversor (${potInvKw.toFixed(2)} kW) es significativamente mayor a la potencia requerida (${potReqConPR.toFixed(2)} kW). Verifique la selección.`);
+  document.getElementById("resultadoSolar").innerHTML = `
+    <div class="bloque" id="bloqueResultado" style="background:white;color:#1a1a1a;">
+      <div class="bloqueTitulo">RESULTADOS</div>
+      <table class="tablaTecnica" style="margin-bottom:16px;">
+        <tr><th>Consumo mensual</th><td>${consumoMensual.toFixed(2)} kWh</td></tr>
+        <tr><th>Consumo diario</th><td>${consumoDiario.toFixed(2)} kWh</td></tr>
+        <tr style="background:#fffde7;"><th>Consumo diario con PR</th><td><strong>${consumoDiarioPR.toFixed(2)} kWh</strong></td></tr>
+        <tr><th>Potencia requerida con PR</th><td><strong>${potReqConPR.toFixed(2)} kW</strong></td></tr>
+        <tr><th>Potencia nominal del inversor</th><td>${potInvKw > 0 ? potInvKw.toFixed(2) + " kW" : "—"}</td></tr>
+        <tr><th>P_FV_max (150% × P_nom)</th><td>${(pfvMaxW/1000).toFixed(2)} kW</td></tr>
+        <tr style="background:#f0f4ff;"><th>SDR aplicado (fotovoltaico)</th><td>${sdrPct > 0 ? sdrPct + "%" : "No aplicado"} <span style="font-size:0.75rem;color:#888;font-weight:400;">— definido en Etapa 1</span></td></tr>
+        <tr><th>Potencia FV objetivo</th><td><strong>${potFvObjetivoKw.toFixed(2)} kW</strong></td></tr>
+        <tr><th>Módulos exactos</th><td><strong>${modulosExactos.toFixed(2)} módulos</strong></td></tr>
+        ${filaModulo}
+        ${filaInversor}
+      </table>
+      ${notasGenerales}
+      <div style="font-size:0.72rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#aaa;margin:20px 0 12px;">
+        Comparativa de escenarios de redondeo
+      </div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:220px;border:2px solid ${bloqA?"var(--rojo)":sdrRealA>40?"#f0a500":"#00A651"};border-radius:12px;padding:16px;${bloqA?"opacity:0.6;":""}">
+          <div style="font-size:0.7rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:${bloqA?"var(--rojo)":sdrRealA>40?"#f0a500":"#00A651"};margin-bottom:10px;">A — Redondeo hacia abajo</div>
+          <table style="width:100%;border-collapse:collapse;">
+            <tr style="border-bottom:1px solid #eee;"><td style="padding:5px 0;font-size:0.82rem;color:#888;">Módulos</td><td style="padding:5px 0;font-size:0.95rem;font-weight:700;text-align:right;">${modA}</td></tr>
+            <tr style="border-bottom:1px solid #eee;"><td style="padding:5px 0;font-size:0.82rem;color:#888;">P_FV instalada</td><td style="padding:5px 0;font-size:0.82rem;font-weight:600;text-align:right;">${potInstAKw.toFixed(2)} kW</td></tr>
+            <tr><td style="padding:5px 0;font-size:0.82rem;color:#888;">Generación mensual est.</td><td style="padding:5px 0;font-size:0.82rem;font-weight:600;text-align:right;">${genA} kWh</td></tr>
+          </table>
+          ${notasA}
+        </div>
+        <div style="flex:1;min-width:220px;border:2px solid ${bloqB?"var(--rojo)":sdrRealB>40?"#f0a500":"#00A651"};border-radius:12px;padding:16px;${bloqB?"opacity:0.6;":""}">
+          <div style="font-size:0.7rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:${bloqB?"var(--rojo)":sdrRealB>40?"#f0a500":"#00A651"};margin-bottom:10px;">B — Redondeo hacia arriba</div>
+          <table style="width:100%;border-collapse:collapse;">
+            <tr style="border-bottom:1px solid #eee;"><td style="padding:5px 0;font-size:0.82rem;color:#888;">Módulos</td><td style="padding:5px 0;font-size:0.95rem;font-weight:700;text-align:right;">${modB}</td></tr>
+            <tr style="border-bottom:1px solid #eee;"><td style="padding:5px 0;font-size:0.82rem;color:#888;">P_FV instalada</td><td style="padding:5px 0;font-size:0.82rem;font-weight:600;text-align:right;">${potInstBKw.toFixed(2)} kW</td></tr>
+            <tr><td style="padding:5px 0;font-size:0.82rem;color:#888;">Generación mensual est.</td><td style="padding:5px 0;font-size:0.82rem;font-weight:600;text-align:right;">${genB} kWh</td></tr>
+          </table>
+          ${notasB}
+        </div>
+      </div>
+      <div style="margin-top:20px;padding:16px 20px;background:#fff8e1;border-left:4px solid #f0a500;border-radius:8px;text-align:left;">
+        <strong style="font-size:0.75rem;letter-spacing:1.5px;text-transform:uppercase;color:#7a5c00;">Aviso importante</strong>
+        <ul style="margin-top:10px;padding-left:18px;color:#7a5c00;font-size:0.83rem;line-height:1.8;">
+          <li>Los resultados mostrados son únicamente informativos y no sustituyen un cálculo, memoria o validación de ingeniería especializada.</li>
+          <li>Se recomienda verificar el dimensionamiento con un especialista calificado antes de la instalación o puesta en operación.</li>
+          <li>Grupo Solarever no se hace responsable por pérdidas de generación, fallas operativas o daños derivados del uso de esta herramienta.</li>
+        </ul>
+      </div>
+    </div>`;
+  document.getElementById("btnPdfContainer").style.display = "block";
+  setTimeout(() => document.getElementById("resultadoSolar").scrollIntoView({behavior:"smooth"}), 150);
+  _mpptData = { modA, modB };
+  let opcionesEscenario = "";
+  if(!bloqA) opcionesEscenario += `<button class="btnSub" onclick="calcularMPPT('A')" id="btnEscA">Usar A (${modA} módulos)</button>`;
+  if(!bloqB) opcionesEscenario += `<button class="btnSub" onclick="calcularMPPT('B')" id="btnEscB" style="margin-left:8px;">Usar B (${modB} módulos)</button>`;
+  document.getElementById("selectorEscenario").innerHTML = `
+    <div style="padding:16px 20px;background:#f8f9fa;border:1.5px solid var(--borde);border-radius:12px;text-align:left;">
+      <p style="font-size:0.72rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#aaa;margin-bottom:12px;">Con cual escenario desea calcular el arreglo MPPT?</p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">${opcionesEscenario}</div>
+    </div>`;
+  document.getElementById("selectorEscenario").style.display = "block";
+}
+function calcularMPPT(escenario){
+  ["btnEscA","btnEscB"].forEach(id => {
+    let btn = document.getElementById(id);
+    if(btn){ btn.style.background=""; btn.style.color=""; }
+  });
+  let btnActivo = document.getElementById("btnEsc"+escenario);
+  if(btnActivo){ btnActivo.style.background="var(--rojo)"; btnActivo.style.color="white"; }
+  let invData = invSeleccionadoData;
+  let modData = modSeleccionadoData;
+  let nModulos = escenario === "A" ? _mpptData.modA : _mpptData.modB;
+  if(!invData || !modData){
+    document.getElementById("resultadoMPPT").innerHTML = `<div class="bloque"><div class="bloqueTitulo">ERROR</div><p>Selecciona módulo e inversor primero.</p></div>`;
+    return;
+  }
+  let Voc = parseFloat(modData["Voc (V)"]) || 0;
+  let Isc = parseFloat(modData["Isc (A)"]) || 0;
+  let nMPPT         = parseInt(String(invData["Número De MPPT"]||"1").replace(/[^0-9]/g,"")) || 1;
+  let cadenasArr    = parsearNumeros(invData["Cadenas por MPPT"]);
+  let corrientesArr = parsearNumeros(invData["Máxima Corriente Por MPPT"]);
+  let rangoMPPT     = parsearRangoMPPT(invData["Rango De Voltaje De MPPT"]);
+  let VmpptMax      = rangoMPPT.max;
+  while(cadenasArr.length < nMPPT)    cadenasArr.push(cadenasArr[0]||2);
+  while(corrientesArr.length < nMPPT) corrientesArr.push(corrientesArr[0]||26);
+  let modsSerie  = Voc > 0 ? Math.floor(VmpptMax / Voc) : 0;
+  let VstringMax = modsSerie * Voc;
+  let notaVoc = notaTecnica("info",
+    `Calculo basado en Voc del módulo (${Voc} V). Vstring = N x Voc <= Vmppt_max (${VmpptMax} V).`);
+  let modRestantes = nModulos;
+  let totalDistribuidos = 0;
+  for(let i = 0; i < nMPPT; i++){
+    if(modRestantes <= 0) continue;
+    let maxStrings   = cadenasArr[i] || 2;
+    let ImpptMax     = corrientesArr[i] || 26;
+    let stringsMaxI  = Isc > 0 ? Math.floor(ImpptMax / Isc) : 1;
+    let stringsPosib = Math.min(maxStrings, stringsMaxI);
+    if(stringsPosib < 1) stringsPosib = 1;
+    let modsEnEsteMppt = Math.min(modRestantes, stringsPosib * modsSerie);
+    let stringsUsados  = modsSerie > 0 ? Math.ceil(modsEnEsteMppt / modsSerie) : 1;
+    if(stringsUsados > stringsPosib) stringsUsados = stringsPosib;
+    let modsFinales = stringsUsados * modsSerie;
+    if(modsFinales > modRestantes) modsFinales = modRestantes;
+    totalDistribuidos += modsFinales;
+    modRestantes -= modsFinales;
+  }
+  let modulosSinAsignar  = nModulos - totalDistribuidos;
+  let maxStringsTotales  = cadenasArr.reduce((s,n) => s+n, 0);
+  let capacidadFisicaMax = maxStringsTotales * modsSerie;
+  let avisoCapacidad = nModulos > capacidadFisicaMax
+    ? `<div style="margin-top:12px;padding:14px 16px;background:#fff0f0;border-left:4px solid var(--rojo);border-radius:8px;font-size:0.85rem;color:var(--rojo);font-weight:600;text-align:left;">
+        Nmod seleccionados (${nModulos}) excede la capacidad del inversor.<br>
+        <span style="font-weight:400;display:block;margin-top:6px;">
+          Capacidad maxima: ${maxStringsTotales} strings x ${modsSerie} mod/string = <strong>${capacidadFisicaMax} módulos</strong>.<br>
+          Reduzca el número de módulos o seleccione un inversor con más entradas MPPT.<br><br>
+          <em>Grupo Solarever no se hace responsable por instalaciones que excedan los límites del inversor.</em>
+        </span>
+      </div>` : "";
+  let avisoSinAsignar = modulosSinAsignar > 0
+    ? notaTecnica("warn", `${modulosSinAsignar} módulo(s) sin asignar. Verifique los límites de corriente y voltaje por MPPT.`)
+    : "";
+  document.getElementById("resultadoMPPT").innerHTML = `
+    <div class="bloque" id="bloqueResultadoMPPT" style="background:white;color:#1a1a1a;">
+      <div class="bloqueTitulo">ARREGLO MPPT — ESCENARIO ${escenario}</div>
+      <table class="tablaTecnica" style="margin-bottom:16px;">
+        <tr><th>Módulos a distribuir</th><td>${nModulos} módulos</td></tr>
+        <tr><th>Voc del módulo</th><td>${Voc} V</td></tr>
+        <tr><th>Isc del módulo</th><td>${Isc} A</td></tr>
+        <tr><th>Vmppt_max</th><td>${VmpptMax} V</td></tr>
+        <tr><th>Módulos máximos en serie por string</th><td><strong>${modsSerie} módulos</strong> — Vstring_max = ${VstringMax.toFixed(2)} V</td></tr>
+        <tr><th>Número de MPPTs</th><td>${nMPPT}</td></tr>
+        <tr><th>Total distribuidos</th><td>${totalDistribuidos} de ${nModulos}</td></tr>
+      </table>
+      ${notaVoc}
+      ${avisoCapacidad}
+      ${avisoSinAsignar}
+    </div>`;
+  document.getElementById("btnPdfContainer").style.display = "block";
+  setTimeout(() => document.getElementById("resultadoMPPT").scrollIntoView({behavior:"smooth"}), 150);
+}
+/* REFERENCIA CRUZADA */
+function irACatalogoInv(marca, modelo){
+  mostrar('datos'); mostrarSub('inv');
+  document.getElementById("marcaSelect").value = marca;
+  filtrarModelos();
+  setTimeout(() => {
+    document.getElementById("modeloSelect").value = modelo;
+    mostrarFicha();
+    document.getElementById("fichaTecnica").scrollIntoView({behavior:"smooth"});
+  }, 100);
+}
+function irACatalogoMod(marca, modelo){
+  if(!marca||!modelo) return;
+  mostrar('datos'); mostrarSub('mod');
+  document.getElementById("marcaMod").value = marca;
+  filtrarModelosMod();
+  setTimeout(() => {
+    document.getElementById("modeloMod").value = modelo;
+    mostrarFichaMod();
+    document.getElementById("fichaModulo").scrollIntoView({behavior:"smooth"});
+  }, 100);
+}
+/* EXPORTAR PDF */
+function exportarPDF(){
+  let res = document.getElementById("bloqueResultado");
+  let mppt = document.getElementById("bloqueResultadoMPPT");
+  if(!res) return;
+  let ventana = window.open('', '_blank');
+  ventana.document.write(`
+    <!DOCTYPE html><html><head>
+    <meta charset="UTF-8"><title>Calculo Solarever</title>
+    <style>
+      body{font-family:Arial,sans-serif;padding:30px;color:#1a1a1a;}
+      table{width:100%;border-collapse:collapse;}
+      tr{border-bottom:1px solid #eee;}
+      th{text-align:left;padding:10px;color:#888;font-size:0.8rem;text-transform:uppercase;width:44%;}
+      td{padding:10px;font-weight:600;font-size:0.92rem;}
+      .bloqueTitulo{background:#CF0A2C;color:white;padding:5px 14px;border-radius:6px;font-size:0.7rem;letter-spacing:2px;text-transform:uppercase;display:inline-block;margin-bottom:16px;}
+      h2{color:#CF0A2C;margin-bottom:4px;}
+      .sub{color:#888;font-size:0.8rem;margin-bottom:24px;}
+      ul{padding-left:18px;color:#7a5c00;font-size:0.8rem;line-height:1.8;}
+      .footer{margin-top:30px;border-top:1px solid #eee;padding-top:14px;font-size:0.78rem;color:#aaa;}
+      a{color:#CF0A2C;text-decoration:none;}
+      button{display:none;}
+    </style>
+    </head><body>
+    <h2>Solarever — Calculo Fotovoltaico</h2>
+    <p class="sub">Generado el ${new Date().toLocaleDateString('es-MX',{year:'numeric',month:'long',day:'numeric'})}</p>
+    ${res.innerHTML}
+    ${mppt ? mppt.innerHTML : ""}
+    <div class="footer">contacto@solarever.com &nbsp;|&nbsp; 55 8007 9165 &nbsp;|&nbsp; www.solarever.com</div>
+    <script>window.onload=function(){window.print();}<\/script>
+    </body></html>`);
+  ventana.document.close();
+}
+function toggleSoporte(){
+  let panel = document.getElementById("panelSoporte");
+  panel.style.display = panel.style.display==="none" ? "block" : "none";
+}
+</script>
+</body>
+</html>
