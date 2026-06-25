@@ -113,7 +113,7 @@
   <div class="card" id="etapa2" style="display:none;margin-top:24px;">
     <h2>Selección de equipos</h2>
     <p style="color:var(--texto-muted);font-size:0.88rem;margin-bottom:20px;text-align:center;">
-      Seleccione módulo e inversor compatibles con el dimensionamiento obtenido en Etapa 1.
+      Seleccione módulo e inversor compatibles con el dimensionamiento obtenido.
     </p>
     <!-- MODULO -->
     <label><strong>Marca del módulo</strong></label>
@@ -787,7 +787,7 @@ function calcularSolar(){
         <tr><th>Potencia requerida con PR</th><td><strong>${potReqConPR.toFixed(2)} kW</strong></td></tr>
         <tr><th>Potencia nominal del inversor</th><td>${potInvKw > 0 ? potInvKw.toFixed(2) + " kW" : "—"}</td></tr>
         <tr><th>P_FV_max (150% × P_nom)</th><td>${(pfvMaxW/1000).toFixed(2)} kW</td></tr>
-        <tr style="background:#f0f4ff;"><th>SDR aplicado (fotovoltaico)</th><td>${sdrPct > 0 ? sdrPct + "%" : "No aplicado"} <span style="font-size:0.75rem;color:#888;font-weight:400;">— definido en Etapa 1</span></td></tr>
+        <tr style="background:#f0f4ff;"><th>SDR aplicado (fotovoltaico)</th><td>${sdrPct > 0 ? sdrPct + "%" : "No aplicado"} <span style="font-size:0.75rem;color:#888;font-weight:400;">— </span></td></tr>
         <tr><th>Potencia FV objetivo</th><td><strong>${potFvObjetivoKw.toFixed(2)} kW</strong></td></tr>
         <tr><th>Módulos exactos</th><td><strong>${modulosExactos.toFixed(2)} módulos</strong></td></tr>
         ${filaModulo}
