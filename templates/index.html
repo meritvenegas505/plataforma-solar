@@ -113,7 +113,7 @@
   <div class="card" id="etapa2" style="display:none;margin-top:24px;">
     <h2>Selección de equipos</h2>
     <p style="color:var(--texto-muted);font-size:0.88rem;margin-bottom:20px;text-align:center;">
-      Seleccione módulo e inversor compatibles con el dimensionamiento obtenido.
+      Seleccione módulo e inversor compatibles con el dimensionamiento obtenido en Etapa 1.
     </p>
     <!-- MODULO -->
     <label><strong>Marca del módulo</strong></label>
@@ -570,12 +570,11 @@ function alElegirInversor(invData){
   let consumoDiario = consumo / 30;
   let potInvW  = parsearW(invData["Potencia Nominal CA"]);
   let potInvKw = potInvW / 1000;
-  const PR = 0.80;
-  let potReqConPR  = (consumoDiario / PR) / hsp;
+  let potReqConPR  = consumoDiario / hsp;
   let potReqFinal  = potReqConPR * sdrVal;
   let labelPotReq  = sdrPct > 0
-    ? `Potencia requerida (con PR 80% + SDR ${sdrPct}%)`
-    : `Potencia requerida (con PR 80%)`;
+    ? `Potencia requerida (con SDR ${sdrPct}%)`
+    : `Potencia requerida`;
   let estadoColor = potInvKw >= potReqConPR ? "#00A651" : "var(--rojo)";
   let estadoTexto = potInvKw >= potReqConPR
     ? "✅ El inversor cumple con la potencia requerida"
@@ -606,8 +605,7 @@ function alElegirInversor(invData){
   document.getElementById("selectorEscenario").style.display = "none";
   document.getElementById("resultadoMPPT").innerHTML = "";
   setTimeout(() => document.getElementById("bloqueInfoSdr").scrollIntoView({behavior:"smooth"}), 150);
-}
-/* =========================================
+}/* =========================================
    ETAPA 1 — DIMENSIONAMIENTO
 ========================================= */
 function calcularDimensionamiento(){
@@ -630,16 +628,13 @@ function calcularDimensionamiento(){
     document.getElementById("etapa2").style.display = "none";
     return;
   }
-  const PR = 0.80;
-  let consumoDiarioPR  = consumoDiario / PR;
-  let potReqSinPR      = consumoDiario / hsp;
-  let potReqConPR      = consumoDiarioPR / hsp;
-  let potReqConSDR     = potReqConPR * sdrVal;
+  let potReq    = consumoDiario / hsp;
+  let potReqSDR = potReq * sdrVal;
   let filaSdr = sdrPct > 0 ? `
     <tr style="background:#f0f4ff;">
       <th>Potencia FV mínima recomendada (con SDR ${sdrPct}%)</th>
       <td>
-        <strong>${potReqConSDR.toFixed(2)} kW</strong>
+        <strong>${potReqSDR.toFixed(2)} kW</strong>
         <span style="font-size:0.75rem;color:#888;display:block;">Para dimensionar los módulos fotovoltaicos</span>
       </td>
     </tr>` : "";
@@ -649,22 +644,16 @@ function calcularDimensionamiento(){
       <table class="tablaTecnica">
         <tr><th>Consumo mensual</th><td>${consumoMensual.toFixed(2)} kWh</td></tr>
         <tr><th>Consumo diario</th><td>${consumoDiario.toFixed(2)} kWh</td></tr>
-        <tr style="background:#fffde7;">
-          <th>Consumo diario con PR (÷ 0.80)</th>
-          <td>
-            <strong>${consumoDiarioPR.toFixed(2)} kWh</strong>
-          </td>
-        </tr>
       </table>
       <div style="margin-top:16px;display:flex;gap:12px;flex-wrap:wrap;">
         <div style="flex:1;min-width:200px;padding:14px;background:#f8f9fa;border-radius:10px;border:1.5px solid var(--borde);">
-          <div style="font-size:0.7rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#aaa;margin-bottom:8px;">P_inv_min (con PR=0.80)</div>
-          <div style="font-size:1.1rem;font-weight:700;color:#1a1a1a;">${potReqConPR.toFixed(2)} kW</div>
+          <div style="font-size:0.7rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#aaa;margin-bottom:8px;">P_inv_min</div>
+          <div style="font-size:1.1rem;font-weight:700;color:#1a1a1a;">${potReq.toFixed(2)} kW</div>
           <div style="font-size:0.75rem;color:#aaa;margin-top:4px;">Potencia mínima del inversor</div>
         </div>
         <div style="flex:1;min-width:200px;padding:14px;background:#f0fff4;border-radius:10px;border:2px solid #00A651;">
           <div style="font-size:0.7rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#00A651;margin-bottom:8px;">P_FV_min${sdrPct > 0 ? " (con SDR "+sdrPct+"%)" : ""}</div>
-          <div style="font-size:1.1rem;font-weight:700;color:#1a1a1a;">${potReqConSDR.toFixed(2)} kW</div>
+          <div style="font-size:1.1rem;font-weight:700;color:#1a1a1a;">${potReqSDR.toFixed(2)} kW</div>
           <div style="font-size:0.75rem;color:#888;margin-top:4px;">Potencia mínima campo fotovoltaico</div>
         </div>
       </div>
@@ -712,9 +701,7 @@ function calcularSolar(){
       <div class="bloque"><div class="bloqueTitulo">ERROR</div><p>Selecciona un módulo e inversor.</p></div>`;
     return;
   }
-  const PR = 0.80;
-  let consumoDiarioPR = consumoDiario / PR;
-  let potReqConPR     = consumoDiarioPR / hsp;
+  let potReqConPR     = consumoDiario / hsp;
   let potReqW         = potReqConPR * 1000;
   let invData  = invSeleccionadoData;
   let potInvW  = parsearW(invData["Potencia Nominal CA"]);
@@ -783,11 +770,10 @@ function calcularSolar(){
       <table class="tablaTecnica" style="margin-bottom:16px;">
         <tr><th>Consumo mensual</th><td>${consumoMensual.toFixed(2)} kWh</td></tr>
         <tr><th>Consumo diario</th><td>${consumoDiario.toFixed(2)} kWh</td></tr>
-        <tr style="background:#fffde7;"><th>Consumo diario con PR</th><td><strong>${consumoDiarioPR.toFixed(2)} kWh</strong></td></tr>
-        <tr><th>Potencia requerida con PR</th><td><strong>${potReqConPR.toFixed(2)} kW</strong></td></tr>
+        <tr><th>Potencia requerida</th><td><strong>${potReqConPR.toFixed(2)} kW</strong></td></tr>
         <tr><th>Potencia nominal del inversor</th><td>${potInvKw > 0 ? potInvKw.toFixed(2) + " kW" : "—"}</td></tr>
         <tr><th>P_FV_max (150% × P_nom)</th><td>${(pfvMaxW/1000).toFixed(2)} kW</td></tr>
-        <tr style="background:#f0f4ff;"><th>SDR aplicado (fotovoltaico)</th><td>${sdrPct > 0 ? sdrPct + "%" : "No aplicado"} <span style="font-size:0.75rem;color:#888;font-weight:400;">— </span></td></tr>
+        <tr style="background:#f0f4ff;"><th>SDR aplicado (fotovoltaico)</th><td>${sdrPct > 0 ? sdrPct + "%" : "No aplicado"} <span style="font-size:0.75rem;color:#888;font-weight:400;">— definido en Etapa 1</span></td></tr>
         <tr><th>Potencia FV objetivo</th><td><strong>${potFvObjetivoKw.toFixed(2)} kW</strong></td></tr>
         <tr><th>Módulos exactos</th><td><strong>${modulosExactos.toFixed(2)} módulos</strong></td></tr>
         ${filaModulo}
@@ -838,108 +824,7 @@ function calcularSolar(){
       <div style="display:flex;gap:12px;flex-wrap:wrap;">${opcionesEscenario}</div>
     </div>`;
   document.getElementById("selectorEscenario").style.display = "block";
-}
-function calcularMPPT(escenario){
-  ["btnEscA","btnEscB"].forEach(id => {
-    let btn = document.getElementById(id);
-    if(btn){ btn.style.background=""; btn.style.color=""; }
-  });
-  let btnActivo = document.getElementById("btnEsc"+escenario);
-  if(btnActivo){ btnActivo.style.background="var(--rojo)"; btnActivo.style.color="white"; }
-  let invData = invSeleccionadoData;
-  let modData = modSeleccionadoData;
-  let nModulos = escenario === "A" ? _mpptData.modA : _mpptData.modB;
-  if(!invData || !modData){
-    document.getElementById("resultadoMPPT").innerHTML = `<div class="bloque"><div class="bloqueTitulo">ERROR</div><p>Selecciona módulo e inversor primero.</p></div>`;
-    return;
-  }
-  let Voc = parseFloat(modData["Voc (V)"]) || 0;
-  let Isc = parseFloat(modData["Isc (A)"]) || 0;
-  let nMPPT         = parseInt(String(invData["Número De MPPT"]||"1").replace(/[^0-9]/g,"")) || 1;
-  let cadenasArr    = parsearNumeros(invData["Cadenas por MPPT"]);
-  let corrientesArr = parsearNumeros(invData["Máxima Corriente Por MPPT"]);
-  let rangoMPPT     = parsearRangoMPPT(invData["Rango De Voltaje De MPPT"]);
-  let VmpptMax      = rangoMPPT.max;
-  while(cadenasArr.length < nMPPT)    cadenasArr.push(cadenasArr[0]||2);
-  while(corrientesArr.length < nMPPT) corrientesArr.push(corrientesArr[0]||26);
-  let modsSerie  = Voc > 0 ? Math.floor(VmpptMax / Voc) : 0;
-  let VstringMax = modsSerie * Voc;
-  let notaVoc = notaTecnica("info",
-    `Calculo basado en Voc del módulo (${Voc} V). Vstring = N x Voc <= Vmppt_max (${VmpptMax} V).`);
-  let modRestantes = nModulos;
-  let totalDistribuidos = 0;
-  for(let i = 0; i < nMPPT; i++){
-    if(modRestantes <= 0) continue;
-    let maxStrings   = cadenasArr[i] || 2;
-    let ImpptMax     = corrientesArr[i] || 26;
-    let stringsMaxI  = Isc > 0 ? Math.floor(ImpptMax / Isc) : 1;
-    let stringsPosib = Math.min(maxStrings, stringsMaxI);
-    if(stringsPosib < 1) stringsPosib = 1;
-    let modsEnEsteMppt = Math.min(modRestantes, stringsPosib * modsSerie);
-    let stringsUsados  = modsSerie > 0 ? Math.ceil(modsEnEsteMppt / modsSerie) : 1;
-    if(stringsUsados > stringsPosib) stringsUsados = stringsPosib;
-    let modsFinales = stringsUsados * modsSerie;
-    if(modsFinales > modRestantes) modsFinales = modRestantes;
-    totalDistribuidos += modsFinales;
-    modRestantes -= modsFinales;
-  }
-  let modulosSinAsignar  = nModulos - totalDistribuidos;
-  let maxStringsTotales  = cadenasArr.reduce((s,n) => s+n, 0);
-  let capacidadFisicaMax = maxStringsTotales * modsSerie;
-  let avisoCapacidad = nModulos > capacidadFisicaMax
-    ? `<div style="margin-top:12px;padding:14px 16px;background:#fff0f0;border-left:4px solid var(--rojo);border-radius:8px;font-size:0.85rem;color:var(--rojo);font-weight:600;text-align:left;">
-        Nmod seleccionados (${nModulos}) excede la capacidad del inversor.<br>
-        <span style="font-weight:400;display:block;margin-top:6px;">
-          Capacidad maxima: ${maxStringsTotales} strings x ${modsSerie} mod/string = <strong>${capacidadFisicaMax} módulos</strong>.<br>
-          Reduzca el número de módulos o seleccione un inversor con más entradas MPPT.<br><br>
-          <em>Grupo Solarever no se hace responsable por instalaciones que excedan los límites del inversor.</em>
-        </span>
-      </div>` : "";
-  let avisoSinAsignar = modulosSinAsignar > 0
-    ? notaTecnica("warn", `${modulosSinAsignar} módulo(s) sin asignar. Verifique los límites de corriente y voltaje por MPPT.`)
-    : "";
-  document.getElementById("resultadoMPPT").innerHTML = `
-    <div class="bloque" id="bloqueResultadoMPPT" style="background:white;color:#1a1a1a;">
-      <div class="bloqueTitulo">ARREGLO MPPT — ESCENARIO ${escenario}</div>
-      <table class="tablaTecnica" style="margin-bottom:16px;">
-        <tr><th>Módulos a distribuir</th><td>${nModulos} módulos</td></tr>
-        <tr><th>Voc del módulo</th><td>${Voc} V</td></tr>
-        <tr><th>Isc del módulo</th><td>${Isc} A</td></tr>
-        <tr><th>Vmppt_max</th><td>${VmpptMax} V</td></tr>
-        <tr><th>Módulos máximos en serie por string</th><td><strong>${modsSerie} módulos</strong> — Vstring_max = ${VstringMax.toFixed(2)} V</td></tr>
-        <tr><th>Número de MPPTs</th><td>${nMPPT}</td></tr>
-        <tr><th>Total distribuidos</th><td>${totalDistribuidos} de ${nModulos}</td></tr>
-      </table>
-      ${notaVoc}
-      ${avisoCapacidad}
-      ${avisoSinAsignar}
-    </div>`;
-  document.getElementById("btnPdfContainer").style.display = "block";
-  setTimeout(() => document.getElementById("resultadoMPPT").scrollIntoView({behavior:"smooth"}), 150);
-}
-/* REFERENCIA CRUZADA */
-function irACatalogoInv(marca, modelo){
-  mostrar('datos'); mostrarSub('inv');
-  document.getElementById("marcaSelect").value = marca;
-  filtrarModelos();
-  setTimeout(() => {
-    document.getElementById("modeloSelect").value = modelo;
-    mostrarFicha();
-    document.getElementById("fichaTecnica").scrollIntoView({behavior:"smooth"});
-  }, 100);
-}
-function irACatalogoMod(marca, modelo){
-  if(!marca||!modelo) return;
-  mostrar('datos'); mostrarSub('mod');
-  document.getElementById("marcaMod").value = marca;
-  filtrarModelosMod();
-  setTimeout(() => {
-    document.getElementById("modeloMod").value = modelo;
-    mostrarFichaMod();
-    document.getElementById("fichaModulo").scrollIntoView({behavior:"smooth"});
-  }, 100);
-}
-/* EXPORTAR PDF */
+}/* EXPORTAR PDF */
 function exportarPDF(){
   let res = document.getElementById("bloqueResultado");
   let mppt = document.getElementById("bloqueResultadoMPPT");
@@ -980,4 +865,5 @@ function toggleSoporte(){
 }
 </script>
 </body>
+</html>
 </html>
