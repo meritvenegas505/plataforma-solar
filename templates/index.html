@@ -824,6 +824,106 @@ function calcularSolar(){
       <div style="display:flex;gap:12px;flex-wrap:wrap;">${opcionesEscenario}</div>
     </div>`;
   document.getElementById("selectorEscenario").style.display = "block";
+  function calcularMPPT(escenario){
+  ["btnEscA","btnEscB"].forEach(id => {
+    let btn = document.getElementById(id);
+    if(btn){ btn.style.background=""; btn.style.color=""; }
+  });
+  let btnActivo = document.getElementById("btnEsc"+escenario);
+  if(btnActivo){ btnActivo.style.background="var(--rojo)"; btnActivo.style.color="white"; }
+  let invData = invSeleccionadoData;
+  let modData = modSeleccionadoData;
+  let nModulos = escenario === "A" ? _mpptData.modA : _mpptData.modB;
+  if(!invData || !modData){
+    document.getElementById("resultadoMPPT").innerHTML = `<div class="bloque"><div class="bloqueTitulo">ERROR</div><p>Selecciona módulo e inversor primero.</p></div>`;
+    return;
+  }
+  let Voc = parseFloat(modData["Voc (V)"]) || 0;
+  let Isc = parseFloat(modData["Isc (A)"]) || 0;
+  let nMPPT         = parseInt(String(invData["Número De MPPT"]||"1").replace(/[^0-9]/g,"")) || 1;
+  let cadenasArr    = parsearNumeros(invData["Cadenas por MPPT"]);
+  let corrientesArr = parsearNumeros(invData["Máxima Corriente Por MPPT"]);
+  let rangoMPPT     = parsearRangoMPPT(invData["Rango De Voltaje De MPPT"]);
+  let VmpptMax      = rangoMPPT.max;
+  while(cadenasArr.length < nMPPT)    cadenasArr.push(cadenasArr[0]||2);
+  while(corrientesArr.length < nMPPT) corrientesArr.push(corrientesArr[0]||26);
+  let modsSerie  = Voc > 0 ? Math.floor(VmpptMax / Voc) : 0;
+  let VstringMax = modsSerie * Voc;
+  let notaVoc = notaTecnica("info",
+    `Calculo basado en Voc del módulo (${Voc} V). Vstring = N x Voc <= Vmppt_max (${VmpptMax} V).`);
+  let modRestantes = nModulos;
+  let totalDistribuidos = 0;
+  for(let i = 0; i < nMPPT; i++){
+    if(modRestantes <= 0) continue;
+    let maxStrings   = cadenasArr[i] || 2;
+    let ImpptMax     = corrientesArr[i] || 26;
+    let stringsMaxI  = Isc > 0 ? Math.floor(ImpptMax / Isc) : 1;
+    let stringsPosib = Math.min(maxStrings, stringsMaxI);
+    if(stringsPosib < 1) stringsPosib = 1;
+    let modsEnEsteMppt = Math.min(modRestantes, stringsPosib * modsSerie);
+    let stringsUsados  = modsSerie > 0 ? Math.ceil(modsEnEsteMppt / modsSerie) : 1;
+    if(stringsUsados > stringsPosib) stringsUsados = stringsPosib;
+    let modsFinales = stringsUsados * modsSerie;
+    if(modsFinales > modRestantes) modsFinales = modRestantes;
+    totalDistribuidos += modsFinales;
+    modRestantes -= modsFinales;
+  }
+  let modulosSinAsignar  = nModulos - totalDistribuidos;
+  let maxStringsTotales  = cadenasArr.reduce((s,n) => s+n, 0);
+  let capacidadFisicaMax = maxStringsTotales * modsSerie;
+  let avisoCapacidad = nModulos > capacidadFisicaMax
+    ? `<div style="margin-top:12px;padding:14px 16px;background:#fff0f0;border-left:4px solid var(--rojo);border-radius:8px;font-size:0.85rem;color:var(--rojo);font-weight:600;text-align:left;">
+        Nmod seleccionados (${nModulos}) excede la capacidad del inversor.<br>
+        <span style="font-weight:400;display:block;margin-top:6px;">
+          Capacidad maxima: ${maxStringsTotales} strings x ${modsSerie} mod/string = <strong>${capacidadFisicaMax} módulos</strong>.<br>
+          Reduzca el número de módulos o seleccione un inversor con más entradas MPPT.<br><br>
+          <em>Grupo Solarever no se hace responsable por instalaciones que excedan los límites del inversor.</em>
+        </span>
+      </div>` : "";
+  let avisoSinAsignar = modulosSinAsignar > 0
+    ? notaTecnica("warn", `${modulosSinAsignar} módulo(s) sin asignar. Verifique los límites de corriente y voltaje por MPPT.`)
+    : "";
+  document.getElementById("resultadoMPPT").innerHTML = `
+    <div class="bloque" id="bloqueResultadoMPPT" style="background:white;color:#1a1a1a;">
+      <div class="bloqueTitulo">ARREGLO MPPT — ESCENARIO ${escenario}</div>
+      <table class="tablaTecnica" style="margin-bottom:16px;">
+        <tr><th>Módulos a distribuir</th><td>${nModulos} módulos</td></tr>
+        <tr><th>Voc del módulo</th><td>${Voc} V</td></tr>
+        <tr><th>Isc del módulo</th><td>${Isc} A</td></tr>
+        <tr><th>Vmppt_max</th><td>${VmpptMax} V</td></tr>
+        <tr><th>Módulos máximos en serie por string</th><td><strong>${modsSerie} módulos</strong> — Vstring_max = ${VstringMax.toFixed(2)} V</td></tr>
+        <tr><th>Número de MPPTs</th><td>${nMPPT}</td></tr>
+        <tr><th>Total distribuidos</th><td>${totalDistribuidos} de ${nModulos}</td></tr>
+      </table>
+      ${notaVoc}
+      ${avisoCapacidad}
+      ${avisoSinAsignar}
+    </div>`;
+  document.getElementById("btnPdfContainer").style.display = "block";
+  setTimeout(() => document.getElementById("resultadoMPPT").scrollIntoView({behavior:"smooth"}), 150);
+}
+/* REFERENCIA CRUZADA */
+function irACatalogoInv(marca, modelo){
+  mostrar('datos'); mostrarSub('inv');
+  document.getElementById("marcaSelect").value = marca;
+  filtrarModelos();
+  setTimeout(() => {
+    document.getElementById("modeloSelect").value = modelo;
+    mostrarFicha();
+    document.getElementById("fichaTecnica").scrollIntoView({behavior:"smooth"});
+  }, 100);
+}
+function irACatalogoMod(marca, modelo){
+  if(!marca||!modelo) return;
+  mostrar('datos'); mostrarSub('mod');
+  document.getElementById("marcaMod").value = marca;
+  filtrarModelosMod();
+  setTimeout(() => {
+    document.getElementById("modeloMod").value = modelo;
+    mostrarFichaMod();
+    document.getElementById("fichaModulo").scrollIntoView({behavior:"smooth"});
+  }, 100);
+}
 }/* EXPORTAR PDF */
 function exportarPDF(){
   let res = document.getElementById("bloqueResultado");
