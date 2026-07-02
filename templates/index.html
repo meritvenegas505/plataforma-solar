@@ -25,10 +25,7 @@
       Biblioteca digital de fichas técnicas y calculadora fotovoltaica.
     </p>
     <div style="margin-top:28px;border-radius:14px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.12);border:1px solid var(--borde);">
-      <video
-        width="100%"
-        controls
-        style="display:block;">
+      <video width="100%" controls style="display:block;">
         <source src="{{ url_for('static', filename='solarever.mp4') }}" type="video/mp4">
       </video>
     </div>
@@ -228,7 +225,6 @@
   </div>
 </footer>
 <script>
-/* TITULO SIN ANIMACION */
 function mostrar(id){
   document.querySelectorAll(".seccion").forEach(sec => sec.classList.remove("activa"));
   document.getElementById(id).classList.add("activa");
@@ -243,7 +239,6 @@ const datos     = {{ datos | tojson }};
 const datos_mod = {{ datos_mod | tojson }};
 const marcaSelect  = document.getElementById("marcaSelect");
 const modeloSelect = document.getElementById("modeloSelect");
-/* CATALOGO — inversores */
 function filtrarModelos(){
   modeloSelect.innerHTML = '<option value="">Selecciona un modelo</option>';
   document.getElementById("fichaTecnica").style.display = "none";
@@ -286,7 +281,6 @@ function mostrarFicha(){
   ficha.innerHTML = contenido;
   ficha.style.display = "block";
 }
-/* CATALOGO — modulos */
 function filtrarModelosMod(){
   let marca = document.getElementById("marcaMod").value;
   let sel   = document.getElementById("modeloMod");
@@ -321,7 +315,6 @@ function mostrarFichaMod(){
   ficha.innerHTML = contenido;
   ficha.style.display = "block";
 }
-/* BUSCADORES CATALOGO */
 document.getElementById("buscador").addEventListener("keypress", function(e){
   if(e.key === "Enter"){
     let texto = this.value.toLowerCase();
@@ -343,9 +336,6 @@ document.getElementById("buscadorMod").addEventListener("keypress", function(e){
     }
   }
 });
-/* =========================================
-   TIPO DE CONSUMO
-========================================= */
 let tipoConsumo = "mensual";
 function elegirTipoConsumo(tipo){
   tipoConsumo = tipo;
@@ -356,9 +346,6 @@ function elegirTipoConsumo(tipo){
   document.getElementById("btnConsumoDiario").style.background  = tipo === "diario"  ? "var(--rojo)" : "";
   document.getElementById("btnConsumoDiario").style.color       = tipo === "diario"  ? "white" : "";
 }
-/* =========================================
-   PARSERS
-========================================= */
 function parsearW(str){
   return parseFloat(String(str||"").replace(/,/g,"").replace(/[^0-9.]/g,"")) || 0;
 }
@@ -372,23 +359,16 @@ function notaTecnica(tipo, msg){
   let iconos = { error:"❌", warn:"⚠️", ok:"✅", info:"ℹ️" };
   return `<div style="margin-top:6px;padding:6px 10px;border-radius:6px;font-size:0.78rem;font-weight:600;${estilos[tipo]}">${iconos[tipo]} ${msg}</div>`;
 }
-/* =========================================
-   SDR ETAPA 1 — actualizar en tiempo real
-========================================= */
 function obtenerSdrVal(){
   let pct = parseInt(document.getElementById("sdrEtapa1").value) || 0;
   return 1 + (pct / 100);
 }
 function actualizarSdrEtapa1(){
-  /* Si ya hay resultados en Etapa 1 mostrados, los recalcula */
   let res = document.getElementById("resultadoDim");
   if(res.style.display !== "none" && res.innerHTML.trim() !== ""){
     calcularDimensionamiento();
   }
 }
-/* =========================================
-   FILTRAR MODULOS (calculadora)
-========================================= */
 let modSeleccionadoData = null;
 function parsearNumeros(str){
   return String(str||"").split("/").map(s => parseFloat(s.replace(/[^0-9.]/g,""))).filter(n => !isNaN(n));
@@ -422,9 +402,6 @@ function alElegirModulo(){
     `✅ ${mod["Marca"].charAt(0).toUpperCase()+mod["Marca"].slice(1)} — ${mod["Modelo"]} · ${mod["Potencia (W)"]}W`;
   document.getElementById("modSeleccionado").style.display = "block";
 }
-/* =========================================
-   FILTRAR INVERSORES (calculadora)
-========================================= */
 let invSeleccionadoData = null;
 let _mpptData = {};
 function filtrarModelosInvCalc(){
@@ -452,16 +429,9 @@ function alElegirInversorSelect(){
   document.getElementById("invSeleccionado").style.display = "block";
   alElegirInversor(inv);
 }
-/* =========================================
-   AUTOCOMPLETADO MODULO
-========================================= */
 function autocompletarMod(texto){
   let lista = document.getElementById("sugerenciasMod");
-  if(!texto || texto.length < 2){
-    lista.style.display = "none";
-    /* Si borran el texto pero ya habia un modulo seleccionado, no lo limpiamos */
-    return;
-  }
+  if(!texto || texto.length < 2){ lista.style.display = "none"; return; }
   let resultados = datos_mod.filter(m =>
     (m["Modelo"]||"").toLowerCase().includes(texto.toLowerCase())
   ).slice(0, 10);
@@ -487,23 +457,14 @@ function seleccionarMod(modelo){
   document.getElementById("potenciaPanel").value = mod["Potencia (W)"] || "";
   document.getElementById("calcMarcaMod").value = mod["Marca"] || "";
   filtrarModelosCalc();
-  setTimeout(() => {
-    document.getElementById("calcModeloMod").value = modelo;
-  }, 50);
+  setTimeout(() => { document.getElementById("calcModeloMod").value = modelo; }, 50);
   document.getElementById("modSeleccionado").innerHTML =
     `✅ ${mod["Marca"].charAt(0).toUpperCase()+mod["Marca"].slice(1)} — ${mod["Modelo"]} · ${mod["Potencia (W)"]}W`;
   document.getElementById("modSeleccionado").style.display = "block";
 }
-/* =========================================
-   AUTOCOMPLETADO INVERSOR
-========================================= */
 function autocompletarInv(texto){
   let lista = document.getElementById("sugerenciasInv");
-  if(!texto || texto.length < 2){
-    lista.style.display = "none";
-    /* Si borran el texto pero ya habia un inversor seleccionado, no lo limpiamos */
-    return;
-  }
+  if(!texto || texto.length < 2){ lista.style.display = "none"; return; }
   let resultados = datos.filter(d =>
     (d.Modelo||"").toLowerCase().includes(texto.toLowerCase())
   ).slice(0, 10);
@@ -529,9 +490,7 @@ function seleccionarInv(modelo){
   document.getElementById("sugerenciasInv").style.display = "none";
   document.getElementById("calcMarcaInv").value = inv["Marca"] || "";
   filtrarModelosInvCalc();
-  setTimeout(() => {
-    document.getElementById("calcModeloInv").value = modelo;
-  }, 50);
+  setTimeout(() => { document.getElementById("calcModeloInv").value = modelo; }, 50);
   let potInvKw = parsearW(inv["Potencia Nominal CA"]) / 1000;
   document.getElementById("invSeleccionado").innerHTML =
     `✅ ${inv["Marca"].charAt(0).toUpperCase()+inv["Marca"].slice(1)} — ${inv["Modelo"]} · ${potInvKw.toFixed(2)} kW`;
@@ -544,9 +503,6 @@ document.addEventListener("click", function(e){
   if(!e.target.closest("#buscadorCalcInv") && !e.target.closest("#sugerenciasInv"))
     document.getElementById("sugerenciasInv").style.display = "none";
 });
-/* =========================================
-   RESET
-========================================= */
 function resetearSdrUI(){
   document.getElementById("bloqueInfoSdr").style.display = "none";
   document.getElementById("btnCalcDirecto").style.display = "none";
@@ -555,9 +511,6 @@ function resetearSdrUI(){
   document.getElementById("selectorEscenario").style.display = "none";
   document.getElementById("resultadoMPPT").innerHTML = "";
 }
-/* =========================================
-   AL ELEGIR INVERSOR
-========================================= */
 function alElegirInversor(invData){
   if(!invData){ resetearSdrUI(); return; }
   let consumo = tipoConsumo === "mensual"
@@ -572,9 +525,7 @@ function alElegirInversor(invData){
   let potInvKw = potInvW / 1000;
   let potReqConPR  = consumoDiario / hsp;
   let potReqFinal  = potReqConPR * sdrVal;
-  let labelPotReq  = sdrPct > 0
-    ? `Potencia requerida (con SDR ${sdrPct}%)`
-    : `Potencia requerida`;
+  let labelPotReq  = sdrPct > 0 ? `Potencia requerida (con SDR ${sdrPct}%)` : `Potencia requerida`;
   let estadoColor = potInvKw >= potReqConPR ? "#00A651" : "var(--rojo)";
   let estadoTexto = potInvKw >= potReqConPR
     ? "✅ El inversor cumple con la potencia requerida"
@@ -605,9 +556,7 @@ function alElegirInversor(invData){
   document.getElementById("selectorEscenario").style.display = "none";
   document.getElementById("resultadoMPPT").innerHTML = "";
   setTimeout(() => document.getElementById("bloqueInfoSdr").scrollIntoView({behavior:"smooth"}), 150);
-}/* =========================================
-   ETAPA 1 — DIMENSIONAMIENTO
-========================================= */
+}
 function calcularDimensionamiento(){
   let consumoMensual = 0;
   let consumoDiario  = 0;
@@ -630,14 +579,6 @@ function calcularDimensionamiento(){
   }
   let potReq    = consumoDiario / hsp;
   let potReqSDR = potReq * sdrVal;
-  let filaSdr = sdrPct > 0 ? `
-    <tr style="background:#f0f4ff;">
-      <th>Potencia FV mínima recomendada (con SDR ${sdrPct}%)</th>
-      <td>
-        <strong>${potReqSDR.toFixed(2)} kW</strong>
-        <span style="font-size:0.75rem;color:#888;display:block;">Para dimensionar los módulos fotovoltaicos</span>
-      </td>
-    </tr>` : "";
   document.getElementById("resultadoDim").innerHTML = `
     <div class="bloque">
       <div class="bloqueTitulo">DIMENSIONAMIENTO</div>
@@ -666,9 +607,6 @@ function calcularDimensionamiento(){
   resetearSdrUI();
   setTimeout(() => document.getElementById("etapa2").scrollIntoView({behavior:"smooth"}), 200);
 }
-/* =========================================
-   ETAPA 2 — CALCULAR SISTEMA
-========================================= */
 function calcularSolar(){
   let consumoMensual = 0;
   let consumoDiario  = 0;
@@ -707,17 +645,14 @@ function calcularSolar(){
   let potInvW  = parsearW(invData["Potencia Nominal CA"]);
   let potInvKw = potInvW / 1000;
   let pfvMaxW  = potInvW * 1.50;
-  /* SDR viene de Etapa 1 */
   let potFvObjetivoW  = potReqW * sdrVal;
   let potFvObjetivoKw = potFvObjetivoW / 1000;
   let superaPfvMax    = potFvObjetivoW > pfvMaxW;
   let modulosExactos  = potFvObjetivoW / potenciaPanel;
-  /* ESCENARIO A */
   let modA       = Math.floor(modulosExactos);
   let potInstAW  = modA * potenciaPanel;
   let potInstAKw = potInstAW / 1000;
   let sdrRealA   = potReqW > 0 ? ((potInstAW - potReqW) / potReqW) * 100 : 0;
-  let sdrTotalA  = 100 + sdrRealA;
   let genA       = (potInstAKw * hsp * 30).toFixed(0);
   let bloqA      = sdrRealA > 50 || potInstAW > pfvMaxW;
   let difSdrA    = Math.abs(sdrRealA - sdrPct);
@@ -730,12 +665,10 @@ function calcularSolar(){
     notasA += notaTecnica("ok", `P_FV instalada dentro del rango permitido.`);
   if(difSdrA > 5)
     notasA += notaTecnica("info", `SDR real (${sdrRealA.toFixed(1)}%) difiere ${difSdrA.toFixed(1)}% del SDR propuesto por redondeo.`);
-  /* ESCENARIO B */
   let modB       = Math.ceil(modulosExactos);
   let potInstBW  = modB * potenciaPanel;
   let potInstBKw = potInstBW / 1000;
   let sdrRealB   = potReqW > 0 ? ((potInstBW - potReqW) / potReqW) * 100 : 0;
-  let sdrTotalB  = 100 + sdrRealB;
   let genB       = (potInstBKw * hsp * 30).toFixed(0);
   let bloqB      = sdrRealB > 50 || potInstBW > pfvMaxW;
   let difSdrB    = Math.abs(sdrRealB - sdrPct);
@@ -824,7 +757,8 @@ function calcularSolar(){
       <div style="display:flex;gap:12px;flex-wrap:wrap;">${opcionesEscenario}</div>
     </div>`;
   document.getElementById("selectorEscenario").style.display = "block";
-  function calcularMPPT(escenario){
+}
+function calcularMPPT(escenario){
   ["btnEscA","btnEscB"].forEach(id => {
     let btn = document.getElementById(id);
     if(btn){ btn.style.background=""; btn.style.color=""; }
@@ -902,7 +836,6 @@ function calcularSolar(){
   document.getElementById("btnPdfContainer").style.display = "block";
   setTimeout(() => document.getElementById("resultadoMPPT").scrollIntoView({behavior:"smooth"}), 150);
 }
-/* REFERENCIA CRUZADA */
 function irACatalogoInv(marca, modelo){
   mostrar('datos'); mostrarSub('inv');
   document.getElementById("marcaSelect").value = marca;
@@ -924,7 +857,6 @@ function irACatalogoMod(marca, modelo){
     document.getElementById("fichaModulo").scrollIntoView({behavior:"smooth"});
   }, 100);
 }
-}/* EXPORTAR PDF */
 function exportarPDF(){
   let res = document.getElementById("bloqueResultado");
   let mppt = document.getElementById("bloqueResultadoMPPT");
