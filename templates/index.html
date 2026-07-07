@@ -569,8 +569,11 @@ function calcularDimensionamiento(){
     document.getElementById("etapa2").style.display = "none";
     return;
   }
+  const PR = 0.80;
   let potReq    = consumoDiario / hsp;
-  let potReqSDR = potReq * sdrVal;
+  let potReqPR  = (consumoDiario / PR) / hsp;
+  let potReqSDR = potReqPR * sdrVal;
+  potenciaElegidaEtapa1 = potReqPR;
   document.getElementById("resultadoDim").innerHTML = `
     <div class="bloque">
       <div class="bloqueTitulo">DIMENSIONAMIENTO</div>
@@ -578,19 +581,28 @@ function calcularDimensionamiento(){
         <tr><th>Consumo mensual</th><td>${consumoMensual.toFixed(2)} kWh</td></tr>
         <tr><th>Consumo diario</th><td>${consumoDiario.toFixed(2)} kWh</td></tr>
       </table>
-      <div style="margin-top:16px;display:flex;gap:12px;flex-wrap:wrap;">
-        <div style="flex:1;min-width:200px;padding:14px;background:#f8f9fa;border-radius:10px;border:1.5px solid var(--borde);">
-          <div style="font-size:0.7rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#aaa;margin-bottom:8px;">P_inv_min</div>
-          <div style="font-size:1.1rem;font-weight:700;color:#1a1a1a;">${potReq.toFixed(2)} kW</div>
-          <div style="font-size:0.75rem;color:#aaa;margin-top:4px;">Potencia mínima del inversor</div>
+      <div style="margin-top:12px;font-size:0.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#aaa;margin-bottom:6px;">Selecciona la potencia con la que deseas continuar</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px;">
+        <div onclick="elegirPotenciaEtapa1(1,${potReq})" id="tarjeta1" style="flex:1;min-width:150px;padding:14px;background:#f8f9fa;border-radius:10px;border:2px solid var(--borde);cursor:pointer;transition:all 0.2s;">
+          <div style="font-size:0.65rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#aaa;margin-bottom:6px;">Sin PR · Sin SDR</div>
+          <div style="font-size:1.05rem;font-weight:700;color:#1a1a1a;">${potReq.toFixed(2)} kW</div>
+          <div style="font-size:0.72rem;color:#aaa;margin-top:4px;">Condiciones ideales</div>
         </div>
-        <div style="flex:1;min-width:200px;padding:14px;background:#f0fff4;border-radius:10px;border:2px solid #00A651;">
-          <div style="font-size:0.7rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#00A651;margin-bottom:8px;">P_FV_min${sdrPct > 0 ? " (con SDR "+sdrPct+"%)" : ""}</div>
-          <div style="font-size:1.1rem;font-weight:700;color:#1a1a1a;">${potReqSDR.toFixed(2)} kW</div>
-          <div style="font-size:0.75rem;color:#888;margin-top:4px;">Potencia mínima campo fotovoltaico</div>
+        <div onclick="elegirPotenciaEtapa1(2,${potReqPR})" id="tarjeta2" style="flex:1;min-width:150px;padding:14px;background:#f0f4ff;border-radius:10px;border:2px solid #1F6FB2;cursor:pointer;transition:all 0.2s;">
+          <div style="font-size:0.65rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#1F6FB2;margin-bottom:6px;">Con PR 80%</div>
+          <div style="font-size:1.05rem;font-weight:700;color:#1a1a1a;">${potReqPR.toFixed(2)} kW</div>
+          <div style="font-size:0.72rem;color:#555;margin-top:4px;">P_inv_min recomendada</div>
+        </div>
+        <div onclick="elegirPotenciaEtapa1(3,${potReqSDR})" id="tarjeta3" style="flex:1;min-width:150px;padding:14px;background:#f0fff4;border-radius:10px;border:2px solid #00A651;cursor:pointer;transition:all 0.2s;">
+          <div style="font-size:0.65rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#00A651;margin-bottom:6px;">Con PR 80% + SDR ${sdrPct > 0 ? sdrPct+"%" : "0%"}</div>
+          <div style="font-size:1.05rem;font-weight:700;color:#1a1a1a;">${potReqSDR.toFixed(2)} kW</div>
+          <div style="font-size:0.72rem;color:#555;margin-top:4px;">P_FV_min recomendada</div>
         </div>
       </div>
-      <div style="margin-top:14px;padding:12px 16px;background:#f0fff4;border-left:4px solid #00A651;border-radius:8px;font-size:0.85rem;color:#1a6b35;text-align:left;">
+      <div id="notaElegida" style="margin-top:12px;padding:10px 14px;background:#f0f4ff;border-left:4px solid #1F6FB2;border-radius:8px;font-size:0.83rem;color:#1a3a6b;text-align:left;">
+        ✅ Usando <strong>${potReqPR.toFixed(2)} kW</strong> (Con PR 80%) — puedes cambiar la selección.
+      </div>
+      <div style="margin-top:10px;padding:12px 16px;background:#f0fff4;border-left:4px solid #00A651;border-radius:8px;font-size:0.85rem;color:#1a6b35;text-align:left;">
         Parámetros de dimensionamiento listos. Proceda a la selección de equipos.
       </div>
     </div>`;
