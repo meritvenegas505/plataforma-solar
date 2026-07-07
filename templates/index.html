@@ -329,6 +329,7 @@ document.getElementById("buscadorMod").addEventListener("keypress", function(e){
   }
 });
 let tipoConsumo = "mensual";
+let potenciaElegidaEtapa1 = 0;
 function elegirTipoConsumo(tipo){
   tipoConsumo = tipo;
   document.getElementById("inputConsumoMensual").style.display = tipo === "mensual" ? "block" : "none";
@@ -505,19 +506,11 @@ function resetearSdrUI(){
 }
 function alElegirInversor(invData){
   if(!invData){ resetearSdrUI(); return; }
-  let consumo = tipoConsumo === "mensual"
-    ? parseFloat(document.getElementById("consumoMensual").value) || 0
-    : parseFloat(document.getElementById("consumoDiarioInput").value) * 30 || 0;
-  let hsp    = parseFloat(document.getElementById("hsp").value) || 0;
-  let sdrPct = parseInt(document.getElementById("sdrEtapa1").value) || 0;
-  let sdrVal = 1 + (sdrPct / 100);
-  if(consumo <= 0 || hsp <= 0){ resetearSdrUI(); return; }
-  let consumoDiario = consumo / 30;
+  if(potenciaElegidaEtapa1 <= 0){ resetearSdrUI(); return; }
+  let potReqConPR = potenciaElegidaEtapa1;
   let potInvW  = parsearW(invData["Potencia Nominal CA"]);
   let potInvKw = potInvW / 1000;
-  let potReqConPR  = consumoDiario / hsp;
-  let potReqFinal  = potReqConPR * sdrVal;
-  let labelPotReq  = sdrPct > 0 ? `Potencia requerida (con SDR ${sdrPct}%)` : `Potencia requerida`;
+  let labelPotReq  = "Potencia requerida (según selección Etapa 1)";
   let estadoColor = potInvKw >= potReqConPR ? "#00A651" : "var(--rojo)";
   let estadoTexto = potInvKw >= potReqConPR
     ? "✅ El inversor cumple con la potencia requerida"
@@ -531,7 +524,7 @@ function alElegirInversor(invData){
     <table style="width:100%;border-collapse:collapse;">
       <tr style="border-bottom:1px solid #eee;">
         <td style="padding:8px 0;font-size:0.85rem;color:#888;">${labelPotReq}</td>
-        <td style="padding:8px 0;font-size:0.85rem;font-weight:700;text-align:right;">${potReqFinal.toFixed(2)} kW</td>
+        <td style="padding:8px 0;font-size:0.85rem;font-weight:700;text-align:right;">${potReqConPR.toFixed(2)} kW</td>
       </tr>
       <tr>
         <td style="padding:8px 0;font-size:0.85rem;color:#888;">Potencia nominal del inversor</td>
@@ -548,6 +541,40 @@ function alElegirInversor(invData){
   document.getElementById("selectorEscenario").style.display = "none";
   document.getElementById("resultadoMPPT").innerHTML = "";
   setTimeout(() => document.getElementById("bloqueInfoSdr").scrollIntoView({behavior:"smooth"}), 150);
+}
+function elegirPotenciaEtapa1(opcion, valor){
+  potenciaElegidaEtapa1 = valor;
+  const nombres = {
+    1: "Sin PR · Sin SDR",
+    2: "Con PR 80%",
+    3: "Con PR 80% + SDR"
+  };
+  const colores = {
+    1: "var(--borde)",
+    2: "#1F6FB2",
+    3: "#00A651"
+  };
+  for(let i = 1; i <= 3; i++){
+    let card = document.getElementById("tarjeta" + i);
+    if(!card) continue;
+    if(i === opcion){
+      card.style.boxShadow = `0 0 0 3px ${colores[i]}66`;
+      card.style.transform = "scale(1.03)";
+      card.style.opacity = "1";
+    } else {
+      card.style.boxShadow = "none";
+      card.style.transform = "scale(1)";
+      card.style.opacity = "0.55";
+    }
+  }
+  let nota = document.getElementById("notaElegida");
+  if(nota){
+    nota.innerHTML = `✅ Usando <strong>${valor.toFixed(2)} kW</strong> (${nombres[opcion]}) — seleccionado.`;
+  }
+  // Si ya hay un inversor elegido en Etapa 2, recalcular la comparación con la nueva selección
+  if(invSeleccionadoData){
+    alElegirInversor(invSeleccionadoData);
+  }
 }
 function calcularDimensionamiento(){
   let consumoMensual = 0;
@@ -573,7 +600,6 @@ function calcularDimensionamiento(){
   let potReq    = consumoDiario / hsp;
   let potReqPR  = (consumoDiario / PR) / hsp;
   let potReqSDR = potReqPR * sdrVal;
-  potenciaElegidaEtapa1 = potReqPR;
   document.getElementById("resultadoDim").innerHTML = `
     <div class="bloque">
       <div class="bloqueTitulo">DIMENSIONAMIENTO</div>
@@ -609,6 +635,8 @@ function calcularDimensionamiento(){
   document.getElementById("resultadoDim").style.display = "block";
   document.getElementById("etapa2").style.display = "block";
   resetearSdrUI();
+  // Selección por defecto: opción 2 (Con PR 80%), resaltada visualmente
+  elegirPotenciaEtapa1(2, potReqPR);
   setTimeout(() => document.getElementById("etapa2").scrollIntoView({behavior:"smooth"}), 200);
 }
 function calcularSolar(){
@@ -630,6 +658,11 @@ function calcularSolar(){
       <div class="bloque"><div class="bloqueTitulo">ERROR</div><p>Completa todos los campos obligatorios.</p></div>`;
     return;
   }
+  if(potenciaElegidaEtapa1 <= 0){
+    document.getElementById("resultadoSolar").innerHTML = `
+      <div class="bloque"><div class="bloqueTitulo">ERROR</div><p>Selecciona una de las tarjetas de potencia en la Etapa 1 antes de continuar.</p></div>`;
+    return;
+  }
   if(!modSeleccionadoData){
     let modeloMod = document.getElementById("calcModeloMod").value;
     if(modeloMod) modSeleccionadoData = datos_mod.find(m => m["Modelo"] === modeloMod) || null;
@@ -643,7 +676,7 @@ function calcularSolar(){
       <div class="bloque"><div class="bloqueTitulo">ERROR</div><p>Selecciona un módulo e inversor.</p></div>`;
     return;
   }
-  let potReqConPR     = consumoDiario / hsp;
+  let potReqConPR     = potenciaElegidaEtapa1;
   let potReqW         = potReqConPR * 1000;
   let invData  = invSeleccionadoData;
   let potInvW  = parsearW(invData["Potencia Nominal CA"]);
