@@ -619,11 +619,6 @@ function calcularDimensionamiento(){
           <div style="font-size:1.05rem;font-weight:700;color:#1a1a1a;">${potReqPR.toFixed(2)} kW</div>
           <div style="font-size:0.72rem;color:#555;margin-top:4px;">P_inv_min recomendada</div>
         </div>
-        <div onclick="elegirPotenciaEtapa1(3,${potReqSDR})" id="tarjeta3" style="flex:1;min-width:150px;padding:14px;background:#f0fff4;border-radius:10px;border:2px solid #00A651;cursor:pointer;transition:all 0.2s;">
-          <div style="font-size:0.65rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#00A651;margin-bottom:6px;">Con PR 80% + SDR ${sdrPct > 0 ? sdrPct+"%" : "0%"}</div>
-          <div style="font-size:1.05rem;font-weight:700;color:#1a1a1a;">${potReqSDR.toFixed(2)} kW</div>
-          <div style="font-size:0.72rem;color:#555;margin-top:4px;">P_FV_min recomendada</div>
-        </div>
       </div>
       <div id="notaElegida" style="margin-top:12px;padding:10px 14px;background:#f0f4ff;border-left:4px solid #1F6FB2;border-radius:8px;font-size:0.83rem;color:#1a3a6b;text-align:left;">
         ✅ Usando <strong>${potReqPR.toFixed(2)} kW</strong> (Con PR 80%) — puedes cambiar la selección.
