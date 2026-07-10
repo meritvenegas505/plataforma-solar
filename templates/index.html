@@ -245,7 +245,7 @@ function mostrarFicha(){
   const inv = datos.find(d => d.Modelo === modelo);
   if(!inv) return;
   let contenido = `
-    ${inv["Imagen"] ? `<div class="imgContainer"><img src="/static/IMG/${inv["Imagen"]}" class="imagenFicha" onerror="this.style.display='none'"></div>` : ""}
+    ${inv["Imagen"] ? `<div class="imgContainer"><img src="/static/img/${inv["Imagen"]}" class="imagenFicha" onerror="this.style.display='none'"></div>` : ""}
     <div class="bloque">
       <div class="bloqueTitulo">INVERSOR</div>
       <table class="tablaTecnica">
@@ -289,7 +289,7 @@ function mostrarFichaMod(){
   let mod = datos_mod.find(m => m["Modelo"] === modelo);
   if(!mod) return;
   let contenido = `
-    ${mod["Imagen"] ? `<div class="imgContainer"><img src="/static/IMG/${mod["Imagen"]}" class="imagenFicha" onerror="this.style.display='none'"></div>` : ""}
+    ${mod["Imagen"] ? `<div class="imgContainer"><img src="/static/img/${mod["Imagen"]}" class="imagenFicha" onerror="this.style.display='none'"></div>` : ""}
     <div class="bloque">
       <div class="bloqueTitulo">MÓDULO</div>
       <table class="tablaTecnica">
