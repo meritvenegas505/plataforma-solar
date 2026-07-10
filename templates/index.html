@@ -10,7 +10,7 @@
   <img src="{{ url_for('static', filename='img/logo_solarever.png') }}" class="logo">
   <div class="titulo">
     <h1 class="jump" id="title">Solarever</h1>
-    <p>Energía solar para un futuro mejor</p>
+    <p>La calidad es nuestra vida - Quality is our life</p>
   </div>
 </header>
 <nav class="menu">
@@ -165,7 +165,7 @@
   </div>
   <div class="panel-soporte-body">
     <a href="https://wa.me/5580079165" target="_blank" class="btn-whatsapp">💬 WhatsApp Solarever</a>
-    <a href="mailto:contacto@solarever.com" class="btn-correo">✉️ contacto@solarever.com</a>
+    <a href="mailto:st@solarever.com.mx" class="btn-correo">✉️ st@solarever.com.mx</a>
     <div class="contacto-item">
       <div class="contacto-nombre">Ing. Edgar Herrera</div>
       <div class="contacto-cargo">Gerente Nacional de Soporte Técnico</div>
@@ -198,20 +198,20 @@
   <div style="max-width:900px;margin:0 auto;display:flex;flex-wrap:wrap;gap:32px;justify-content:space-between;text-align:left;">
     <div>
       <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:1.3rem;color:white;letter-spacing:3px;text-transform:uppercase;margin-bottom:10px;">Solarever</div>
-      <div style="font-size:0.78rem;line-height:1.8;">Energía solar para un futuro mejor<br>© 2025 Grupo Solarever — Todos los derechos reservados.</div>
+      <div style="font-size:0.78rem;line-height:1.8;">La calidad es nuestra vida - Quality is our life<br>© 2025 Grupo Solarever — Todos los derechos reservados.</div>
     </div>
     <div>
       <div style="font-size:0.7rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--rojo);margin-bottom:10px;">Soporte Técnico</div>
       <div style="font-size:0.78rem;line-height:2;">
         <a href="tel:5580079165" style="color:rgba(255,255,255,0.6);text-decoration:none;">📞 55 8007 9165</a><br>
-        <a href="mailto:contacto@solarever.com" style="color:rgba(255,255,255,0.6);text-decoration:none;">✉️ contacto@solarever.com</a><br>
+        <a href="mailto:st@solarever.com.mx" style="color:rgba(255,255,255,0.6);text-decoration:none;">✉️ st@solarever.com.mx</a><br>
         <a href="https://wa.me/5580079165" target="_blank" style="color:#25D366;text-decoration:none;">💬 WhatsApp Solarever</a>
       </div>
     </div>
     <div>
       <div style="font-size:0.7rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--rojo);margin-bottom:10px;">Sitio web</div>
       <div style="font-size:0.78rem;line-height:2;">
-        <a href="https://www.solarever.com" target="_blank" style="color:rgba(255,255,255,0.6);text-decoration:none;">www.solarever.com</a>
+        <a href="https://www.solarever.com.mx" target="_blank" style="color:rgba(255,255,255,0.6);text-decoration:none;">www.solarever.com.mx</a>
       </div>
     </div>
   </div>
@@ -245,7 +245,7 @@ function mostrarFicha(){
   const inv = datos.find(d => d.Modelo === modelo);
   if(!inv) return;
   let contenido = `
-    ${inv["Imagen"] ? `<div class="imgContainer"><img src="/static/img/${inv["Imagen"]}" class="imagenFicha" onerror="this.style.display='none'"></div>` : ""}
+    ${inv["Imagen"] ? `<div class="imgContainer"><img src="/static/IMG/${inv["Imagen"]}" class="imagenFicha" onerror="this.style.display='none'"></div>` : ""}
     <div class="bloque">
       <div class="bloqueTitulo">INVERSOR</div>
       <table class="tablaTecnica">
@@ -289,7 +289,7 @@ function mostrarFichaMod(){
   let mod = datos_mod.find(m => m["Modelo"] === modelo);
   if(!mod) return;
   let contenido = `
-    ${mod["Imagen"] ? `<div class="imgContainer"><img src="/static/img/${mod["Imagen"]}" class="imagenFicha" onerror="this.style.display='none'"></div>` : ""}
+    ${mod["Imagen"] ? `<div class="imgContainer"><img src="/static/IMG/${mod["Imagen"]}" class="imagenFicha" onerror="this.style.display='none'"></div>` : ""}
     <div class="bloque">
       <div class="bloqueTitulo">MÓDULO</div>
       <table class="tablaTecnica">
@@ -926,7 +926,7 @@ function exportarPDF(){
     <p class="sub">Generado el ${new Date().toLocaleDateString('es-MX',{year:'numeric',month:'long',day:'numeric'})}</p>
     ${res.innerHTML}
     ${mppt ? mppt.innerHTML : ""}
-    <div class="footer">contacto@solarever.com &nbsp;|&nbsp; 55 8007 9165 &nbsp;|&nbsp; www.solarever.com</div>
+    <div class="footer">st@solarever.com.mx &nbsp;|&nbsp; 55 8007 9165 &nbsp;|&nbsp; www.solarever.com.mx</div>
     <script>window.onload=function(){window.print();}<\/script>
     </body></html>`);
   ventana.document.close();
