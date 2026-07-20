@@ -570,7 +570,7 @@ function elegirPotenciaEtapa1(opcion, valor){
   let nota = document.getElementById("notaElegida");
   if(nota){
     let sdrActual = parseInt(document.getElementById("sdrEtapa1").value) || 0;
-    let etiqueta = sdrActual > 0 ? "SDR " + sdrActual + "%" : nombres[opcion];
+    let etiqueta = (opcion !== 1 && sdrActual > 0) ? "SDR " + sdrActual + "%" : nombres[opcion];
     nota.innerHTML = "✅ Usando <strong>" + valor.toFixed(2) + " kW</strong> (" + etiqueta + ") — seleccionado.";
   }
   // Si ya hay un inversor elegido en Etapa 2, recalcular la comparación con la nueva selección
