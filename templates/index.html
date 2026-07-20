@@ -508,15 +508,13 @@ function alElegirInversor(invData){
   if(!invData){ resetearSdrUI(); return; }
   if(potenciaElegidaEtapa1 <= 0){ resetearSdrUI(); return; }
   let potReqConPR = potenciaElegidaEtapa1;
-  let potInvW    = parsearW(invData["Potencia Nominal CA"]);
-  let potInvKw   = potInvW / 1000;
-  let pfvMaxInvW  = parsearW(invData["Máxima Potencia FV"]);
-  let pfvMaxInvKw = pfvMaxInvW > 0 ? pfvMaxInvW / 1000 : potInvW * 1.50 / 1000;
+  let potInvW  = parsearW(invData["Potencia Nominal CA"]);
+  let potInvKw = potInvW / 1000;
   let labelPotReq  = "Potencia requerida (según selección Etapa 1)";
-  let estadoColor = pfvMaxInvKw >= potReqConPR ? "#00A651" : "var(--rojo)";
-  let estadoTexto = pfvMaxInvKw >= potReqConPR
-    ? "✅Ña potencia requerida se encuentra dentro de la potencia máxima FV permitida po el inversor"
-    : "⚠️ El inversor NO cumple — capacidad FV insuficiente";
+  let estadoColor = potInvKw >= potReqConPR ? "#00A651" : "var(--rojo)";
+  let estadoTexto = potInvKw >= potReqConPR
+    ? "✅ El inversor cumple con la potencia requerida"
+    : "⚠️ El inversor NO cumple — capacidad insuficiente";
   let ratio = potInvKw > 0 ? potInvKw / potReqConPR : 0;
   let notaComp = ratio > 10
     ? notaTecnica("warn", `Inversor sobredimensionado para el consumo indicado (ratio ${ratio.toFixed(1)}:1). Verifique que la selección corresponde al proyecto correcto.`)
@@ -528,13 +526,9 @@ function alElegirInversor(invData){
         <td style="padding:8px 0;font-size:0.85rem;color:#888;">${labelPotReq}</td>
         <td style="padding:8px 0;font-size:0.85rem;font-weight:700;text-align:right;">${potReqConPR.toFixed(2)} kW</td>
       </tr>
-      <tr style="border-bottom:1px solid #eee;">
+      <tr>
         <td style="padding:8px 0;font-size:0.85rem;color:#888;">Potencia nominal del inversor</td>
         <td style="padding:8px 0;font-size:0.85rem;font-weight:700;text-align:right;">${potInvKw > 0 ? potInvKw.toFixed(2) + " kW" : "No disponible"}</td>
-      </tr>
-      <tr>
-        <td style="padding:8px 0;font-size:0.85rem;color:#888;">Potencia máxima FV del inversor</td>
-        <td style="padding:8px 0;font-size:0.85rem;font-weight:700;text-align:right;">${pfvMaxInvKw.toFixed(2)} kW</td>
       </tr>
     </table>
     <p style="margin-top:12px;font-size:0.85rem;font-weight:600;color:${estadoColor};">${estadoTexto}</p>
@@ -627,7 +621,7 @@ function calcularDimensionamiento(){
         </div>
       </div>
       <div id="notaElegida" style="margin-top:12px;padding:10px 14px;background:#f0f4ff;border-left:4px solid #1F6FB2;border-radius:8px;font-size:0.83rem;color:#1a3a6b;text-align:left;">
-        ✅ Usando <strong>${potReqPR.toFixed(2)} kW</strong> (Con PR 80%) — puedes cambiar la selección.
+        ✅ Usando <strong>${potReqPR.toFixed(2)} kW</strong> (Con PR 80%${sdrPct > 0 ? " + SDR " + sdrPct + "%" : ""}) — seleccionado.
       </div>
       <div style="margin-top:10px;padding:12px 16px;background:#f0fff4;border-left:4px solid #00A651;border-radius:8px;font-size:0.85rem;color:#1a6b35;text-align:left;">
         Parámetros de dimensionamiento listos. Proceda a la selección de equipos.
@@ -682,11 +676,8 @@ function calcularSolar(){
   let invData  = invSeleccionadoData;
   let potInvW  = parsearW(invData["Potencia Nominal CA"]);
   let potInvKw = potInvW / 1000;
-  let pfvMaxInvW2  = parsearW(invData["Máxima Potencia FV"]);
-  let pfvMaxW  = pfvMaxInvW2 > 0 ? pfvMaxInvW2 : potInvW * 1.50;
-  /* La potencia elegida en Etapa 1 ya incluye el sobredimensionamiento definido por el usuario.
-     No se aplica sdrVal de nuevo aquí para evitar doble sobredimensionamiento. */
-  let potFvObjetivoW  = potReqW;
+  let pfvMaxW  = potInvW * 1.50;
+  let potFvObjetivoW  = potReqW * sdrVal;
   let potFvObjetivoKw = potFvObjetivoW / 1000;
   let superaPfvMax    = potFvObjetivoW > pfvMaxW;
   let modulosExactos  = potFvObjetivoW / potenciaPanel;
