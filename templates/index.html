@@ -515,7 +515,7 @@ function alElegirInversor(invData){
   let labelPotReq  = "Potencia requerida (según selección Etapa 1)";
   let estadoColor = pfvMaxInvKw >= potReqConPR ? "#00A651" : "var(--rojo)";
   let estadoTexto = pfvMaxInvKw >= potReqConPR
-    ? "✅ El inversor cumple con la potencia requerida"
+    ? "✅Ña potencia requerida se encuentra dentro de la potencia máxima FV permitida po el inversor"
     : "⚠️ El inversor NO cumple — capacidad FV insuficiente";
   let ratio = potInvKw > 0 ? potInvKw / potReqConPR : 0;
   let notaComp = ratio > 10
