@@ -698,9 +698,9 @@ function calcularSolar(){
   else if(sdrRealA > 40)
     notasA += notaTecnica("warn", `SDR real (${sdrRealA.toFixed(1)}%) supera el 40%. Riesgo elevado de clipping.`);
   else
-    notasA += notaTecnica("ok", `P_FV instalada dentro del rango permitido.`);
+    notasA += notaTecnica("ok", `..`);
   if(difSdrA > 5)
-    notasA += notaTecnica("info", `SDR real (${sdrRealA.toFixed(1)}%) difiere ${difSdrA.toFixed(1)}% del SDR propuesto por redondeo.`);
+    notasA += notaTecnica("info", `.`);
   let modB       = Math.ceil(modulosExactos);
   let potInstBW  = modB * potenciaPanel;
   let potInstBKw = potInstBW / 1000;
@@ -714,9 +714,9 @@ function calcularSolar(){
   else if(sdrRealB > 40)
     notasB += notaTecnica("warn", `SDR real (${sdrRealB.toFixed(1)}%) supera el 40%. Riesgo elevado de clipping.`);
   else
-    notasB += notaTecnica("ok", `P_FV instalada dentro del rango permitido.`);
+    notasB += notaTecnica("ok", `.`);
   if(difSdrB > 5)
-    notasB += notaTecnica("info", `SDR real (${sdrRealB.toFixed(1)}%) difiere ${difSdrB.toFixed(1)}% del SDR propuesto por redondeo.`);
+    notasB += notaTecnica("info", `.`);
   let modData = modSeleccionadoData;
   let nombreMarcaMod = modData ? modData.Marca.charAt(0).toUpperCase() + modData.Marca.slice(1) : "";
   let nombreMarcaInv = invData ? invData.Marca.charAt(0).toUpperCase() + invData.Marca.slice(1) : "";
