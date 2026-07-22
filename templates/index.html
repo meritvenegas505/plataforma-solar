@@ -510,9 +510,10 @@ function alElegirInversor(invData){
   let potReqConPR = potenciaElegidaEtapa1;
   let potInvW  = parsearW(invData["Potencia Nominal CA"]);
   let potInvKw = potInvW / 1000;
+  let pfvMaxKw = potInvKw * 1.50;
   let labelPotReq  = "Potencia requerida (según selección Etapa 1)";
-  let estadoColor = potInvKw >= potReqConPR ? "#00A651" : "var(--rojo)";
-  let estadoTexto = potInvKw >= potReqConPR
+  let estadoColor = pfvMaxKw >= potReqConPR ? "#00A651" : "var(--rojo)";
+  let estadoTexto = pfvMaxKw >= potReqConPR
     ? "✅ El inversor cumple con la potencia requerida"
     : "⚠️ El inversor NO cumple — capacidad insuficiente";
   let ratio = potInvKw > 0 ? potInvKw / potReqConPR : 0;
@@ -526,9 +527,13 @@ function alElegirInversor(invData){
         <td style="padding:8px 0;font-size:0.85rem;color:#888;">${labelPotReq}</td>
         <td style="padding:8px 0;font-size:0.85rem;font-weight:700;text-align:right;">${potReqConPR.toFixed(2)} kW</td>
       </tr>
-      <tr>
+      <tr style="border-bottom:1px solid #eee;">
         <td style="padding:8px 0;font-size:0.85rem;color:#888;">Potencia nominal del inversor</td>
         <td style="padding:8px 0;font-size:0.85rem;font-weight:700;text-align:right;">${potInvKw > 0 ? potInvKw.toFixed(2) + " kW" : "No disponible"}</td>
+      </tr>
+      <tr>
+        <td style="padding:8px 0;font-size:0.85rem;color:#888;">Potencia máxima FV admitida (nominal × 1.5)</td>
+        <td style="padding:8px 0;font-size:0.85rem;font-weight:700;text-align:right;">${pfvMaxKw > 0 ? pfvMaxKw.toFixed(2) + " kW" : "No disponible"}</td>
       </tr>
     </table>
     <p style="margin-top:12px;font-size:0.85rem;font-weight:600;color:${estadoColor};">${estadoTexto}</p>
@@ -590,7 +595,7 @@ function calcularDimensionamiento(){
   }
   let hsp    = parseFloat(document.getElementById("hsp").value) || 0;
   let sdrPct = parseInt(document.getElementById("sdrEtapa1").value) || 0;
-  let sdrVal = 1 + (sdrPct / 100);
+  let sdrDivisor = 1 - (sdrPct / 100);
   if(consumoMensual <= 0 || hsp <= 0){
     document.getElementById("resultadoDim").innerHTML = `
       <div class="bloque"><div class="bloqueTitulo">ERROR</div><p>Ingresa el consumo y las horas sol pico.</p></div>`;
@@ -598,10 +603,8 @@ function calcularDimensionamiento(){
     document.getElementById("etapa2").style.display = "none";
     return;
   }
-  const PR = 0.80;
   let potReq    = consumoDiario / hsp;
-  let potReqPR  = (consumoDiario / PR) / hsp;
-  let potReqSDR = potReqPR * sdrVal;
+  let potReqSDR = sdrDivisor > 0 ? potReq / sdrDivisor : potReq;
   document.getElementById("resultadoDim").innerHTML = `
     <div class="bloque">
       <div class="bloqueTitulo">DIMENSIONAMIENTO</div>
@@ -649,7 +652,6 @@ function calcularSolar(){
   let hsp           = parseFloat(document.getElementById("hsp").value) || 0;
   let potenciaPanel = parseFloat(document.getElementById("potenciaPanel").value) || 0;
   let sdrPct        = parseInt(document.getElementById("sdrEtapa1").value) || 0;
-  let sdrVal        = 1 + (sdrPct / 100);
   if(consumoMensual <= 0 || hsp <= 0 || potenciaPanel <= 0){
     document.getElementById("resultadoSolar").innerHTML = `
       <div class="bloque"><div class="bloqueTitulo">ERROR</div><p>Completa todos los campos obligatorios.</p></div>`;
@@ -679,7 +681,7 @@ function calcularSolar(){
   let potInvW  = parsearW(invData["Potencia Nominal CA"]);
   let potInvKw = potInvW / 1000;
   let pfvMaxW  = potInvW * 1.50;
-  let potFvObjetivoW  = potReqW * sdrVal;
+  let potFvObjetivoW  = potReqW;
   let potFvObjetivoKw = potFvObjetivoW / 1000;
   let superaPfvMax    = potFvObjetivoW > pfvMaxW;
   let modulosExactos  = potFvObjetivoW / potenciaPanel;
