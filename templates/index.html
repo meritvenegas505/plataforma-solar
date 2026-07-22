@@ -361,6 +361,10 @@ function actualizarSdrEtapa1(){
   if(res.style.display !== "none" && res.innerHTML.trim() !== ""){
     calcularDimensionamiento();
   }
+  let resSolar = document.getElementById("resultadoSolar");
+  if(resSolar && resSolar.innerHTML.trim() !== ""){
+    calcularSolar();
+  }
 }
 let modSeleccionadoData = null;
 function parsearNumeros(str){
