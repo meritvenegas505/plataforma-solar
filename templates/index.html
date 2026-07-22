@@ -590,7 +590,6 @@ function calcularDimensionamiento(){
   }
   let hsp    = parseFloat(document.getElementById("hsp").value) || 0;
   let sdrPct = parseInt(document.getElementById("sdrEtapa1").value) || 0;
-  let sdrVal = 1 + (sdrPct / 100);
   if(consumoMensual <= 0 || hsp <= 0){
     document.getElementById("resultadoDim").innerHTML = `
       <div class="bloque"><div class="bloqueTitulo">ERROR</div><p>Ingresa el consumo y las horas sol pico.</p></div>`;
@@ -599,9 +598,18 @@ function calcularDimensionamiento(){
     return;
   }
   const PR = 0.80;
-  let potReq    = consumoDiario / hsp;
-  let potReqPR  = (consumoDiario / PR) / hsp;
-  let potReqSDR = potReqPR * sdrVal;
+
+// Potencia base
+let potReq = consumoDiario / hsp;
+
+// Aplicar PR (80%)
+let potReqPR = potReq / PR;
+
+// Divisor correspondiente al SDR
+let divisorSDR = 1 - (sdrPct / 100);
+
+// Potencia requerida final
+let potReqSDR = potReqPR / divisorSDR;
   document.getElementById("resultadoDim").innerHTML = `
     <div class="bloque">
       <div class="bloqueTitulo">DIMENSIONAMIENTO</div>
@@ -617,8 +625,7 @@ function calcularDimensionamiento(){
           <div style="font-size:0.72rem;color:#aaa;margin-top:4px;">Condiciones ideales</div>
         </div>
         <div onclick="elegirPotenciaEtapa1(2,${potReqSDR})" id="tarjeta2" style="flex:1;min-width:150px;padding:14px;background:#f0f4ff;border-radius:10px;border:2px solid #1F6FB2;cursor:pointer;transition:all 0.2s;">
-          <div style="font-size:0.65rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#1F6FB2;margin-bottom:6px;">Con PR 80%${sdrPct > 0 ? " + SDR " + sdrPct + "%" : ""}</div>
-          <div style="font-size:1.05rem;font-weight:700;color:#1a1a1a;">${potReqSDR.toFixed(2)} kW</div>
+        <div style="font-size:0.65rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#1F6FB2;margin-bottom:6px;">Potencia requerida${sdrPct > 0 ? " (PR 80% + SDR " + sdrPct + "%)" : " (PR 80%)"}</div> <div style="font-size:1.05rem;font-weight:700;color:#1a1a1a;">${potReqSDR.toFixed(2)} kW</div>
           <div style="font-size:0.72rem;color:#555;margin-top:4px;">P_inv_min recomendada</div>
         </div>
       </div>
