@@ -510,12 +510,16 @@ function alElegirInversor(invData){
   let potReqConPR = potenciaElegidaEtapa1;
   let potInvW  = parsearW(invData["Potencia Nominal CA"]);
   let potInvKw = potInvW / 1000;
-  let labelPotReq  = "Potencia requerida (según selección Etapa 1)";
-  let estadoColor = potInvKw >= potReqConPR ? "#00A651" : "var(--rojo)";
-  let estadoTexto = potInvKw >= potReqConPR
+  /* Usar Máxima Potencia FV del Excel; si no existe calcular 150% de nominal */
+  let pfvMaxInvW  = parsearW(invData["Máxima Potencia FV"]);
+  if(!pfvMaxInvW || pfvMaxInvW <= 0) pfvMaxInvW = potInvW * 1.50;
+  let pfvMaxInvKw = pfvMaxInvW / 1000;
+  let labelPotReq = "Potencia requerida (según selección Etapa 1)";
+  let estadoColor = pfvMaxInvKw >= potReqConPR ? "#00A651" : "var(--rojo)";
+  let estadoTexto = pfvMaxInvKw >= potReqConPR
     ? "✅ El inversor cumple con la potencia requerida"
     : "⚠️ El inversor NO cumple — capacidad insuficiente";
-  let ratio = potInvKw > 0 ? potInvKw / potReqConPR : 0;
+  let ratio = pfvMaxInvKw > 0 ? pfvMaxInvKw / potReqConPR : 0;
   let notaComp = ratio > 10
     ? notaTecnica("warn", `Inversor sobredimensionado para el consumo indicado (ratio ${ratio.toFixed(1)}:1). Verifique que la selección corresponde al proyecto correcto.`)
     : "";
@@ -527,8 +531,8 @@ function alElegirInversor(invData){
         <td style="padding:8px 0;font-size:0.85rem;font-weight:700;text-align:right;">${potReqConPR.toFixed(2)} kW</td>
       </tr>
       <tr>
-        <td style="padding:8px 0;font-size:0.85rem;color:#888;">Potencia nominal del inversor</td>
-        <td style="padding:8px 0;font-size:0.85rem;font-weight:700;text-align:right;">${potInvKw > 0 ? potInvKw.toFixed(2) + " kW" : "No disponible"}</td>
+        <td style="padding:8px 0;font-size:0.85rem;color:#888;">Potencia máxima FV del inversor</td>
+        <td style="padding:8px 0;font-size:0.85rem;font-weight:700;text-align:right;">${pfvMaxInvKw.toFixed(2)} kW</td>
       </tr>
     </table>
     <p style="margin-top:12px;font-size:0.85rem;font-weight:600;color:${estadoColor};">${estadoTexto}</p>
@@ -676,7 +680,9 @@ function calcularSolar(){
   let invData  = invSeleccionadoData;
   let potInvW  = parsearW(invData["Potencia Nominal CA"]);
   let potInvKw = potInvW / 1000;
-  let pfvMaxW  = potInvW * 1.50;
+  /* Leer P_FV_max del Excel; si no existe usar 150% de potencia nominal */
+  let pfvMaxW  = parsearW(invData["Máxima Potencia FV"]);
+  if(!pfvMaxW || pfvMaxW <= 0) pfvMaxW = potInvW * 1.50;
   let potFvObjetivoW  = potReqW * sdrVal;
   let potFvObjetivoKw = potFvObjetivoW / 1000;
   let superaPfvMax    = potFvObjetivoW > pfvMaxW;
