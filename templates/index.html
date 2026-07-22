@@ -616,9 +616,9 @@ function calcularDimensionamiento(){
           <div style="font-size:1.05rem;font-weight:700;color:#1a1a1a;">${potReq.toFixed(2)} kW</div>
           <div style="font-size:0.72rem;color:#aaa;margin-top:4px;">Condiciones ideales</div>
         </div>
-        <div onclick="elegirPotenciaEtapa1(2,${potReqSDR})" id="tarjeta2" style="flex:1;min-width:150px;padding:14px;background:#f0f4ff;border-radius:10px;border:2px solid #1F6FB2;cursor:pointer;transition:all 0.2s;">
-          <div style="font-size:0.65rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#1F6FB2;margin-bottom:6px;">${sdrPct > 0 ? "Con SDR " + sdrPct + "%" : "Con PR"}</div>
-          <div style="font-size:1.05rem;font-weight:700;color:#1a1a1a;">${potReqSDR.toFixed(2)} kW</div>
+        <div onclick="elegirPotenciaEtapa1(2,${potReqPR})" id="tarjeta2" style="flex:1;min-width:150px;padding:14px;background:#f0f4ff;border-radius:10px;border:2px solid #1F6FB2;cursor:pointer;transition:all 0.2s;">
+          <div style="font-size:0.65rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#1F6FB2;margin-bottom:6px;">Con PR 80%</div>
+          <div style="font-size:1.05rem;font-weight:700;color:#1a1a1a;">${potReqPR.toFixed(2)} kW</div>
           <div style="font-size:0.72rem;color:#555;margin-top:4px;">P_inv_min recomendada</div>
         </div>
       </div>
@@ -633,7 +633,7 @@ function calcularDimensionamiento(){
   document.getElementById("etapa2").style.display = "block";
   resetearSdrUI();
   // Selección por defecto: opción 2 (Con PR 80%), resaltada visualmente
-  elegirPotenciaEtapa1(2, potReqSDR);
+  elegirPotenciaEtapa1(2, potReqPR);
   setTimeout(() => document.getElementById("etapa2").scrollIntoView({behavior:"smooth"}), 200);
 }
 function calcularSolar(){
@@ -679,7 +679,7 @@ function calcularSolar(){
   let potInvW  = parsearW(invData["Potencia Nominal CA"]);
   let potInvKw = potInvW / 1000;
   let pfvMaxW  = potInvW * 1.50;
-  let potFvObjetivoW  = potReqW * sdrVal;
+  let potFvObjetivoW  = potReqW;
   let potFvObjetivoKw = potFvObjetivoW / 1000;
   let superaPfvMax    = potFvObjetivoW > pfvMaxW;
   let modulosExactos  = potFvObjetivoW / potenciaPanel;
