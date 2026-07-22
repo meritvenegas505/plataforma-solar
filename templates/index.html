@@ -354,8 +354,7 @@ function notaTecnica(tipo, msg){
 }
 function obtenerSdrVal(){
   let pct = parseInt(document.getElementById("sdrEtapa1").value) || 0;
-  if(pct >= 100) pct = 99; // evita división entre cero o negativos
-  return 1 / (1 - (pct / 100));
+  return 1 + (pct / 100);
 }
 function actualizarSdrEtapa1(){
   let res = document.getElementById("resultadoDim");
@@ -570,7 +569,9 @@ function elegirPotenciaEtapa1(opcion, valor){
   }
   let nota = document.getElementById("notaElegida");
   if(nota){
-    nota.innerHTML = `✅ Usando <strong>${valor.toFixed(2)} kW</strong> (${nombres[opcion]}) — seleccionado.`;
+    let sdrActual = parseInt(document.getElementById("sdrEtapa1").value) || 0;
+    let etiqueta = (opcion === 2 && sdrActual > 0) ? "SDR " + sdrActual + "%" : nombres[opcion];
+    nota.innerHTML = "✅ Usando <strong>" + valor.toFixed(2) + " kW</strong> (" + etiqueta + ") — seleccionado.";
   }
   // Si ya hay un inversor elegido en Etapa 2, recalcular la comparación con la nueva selección
   if(invSeleccionadoData){
@@ -589,7 +590,7 @@ function calcularDimensionamiento(){
   }
   let hsp    = parseFloat(document.getElementById("hsp").value) || 0;
   let sdrPct = parseInt(document.getElementById("sdrEtapa1").value) || 0;
-  let sdrVal = obtenerSdrVal();
+  let sdrVal = 1 + (sdrPct / 100);
   if(consumoMensual <= 0 || hsp <= 0){
     document.getElementById("resultadoDim").innerHTML = `
       <div class="bloque"><div class="bloqueTitulo">ERROR</div><p>Ingresa el consumo y las horas sol pico.</p></div>`;
@@ -615,19 +616,14 @@ function calcularDimensionamiento(){
           <div style="font-size:1.05rem;font-weight:700;color:#1a1a1a;">${potReq.toFixed(2)} kW</div>
           <div style="font-size:0.72rem;color:#aaa;margin-top:4px;">Condiciones ideales</div>
         </div>
-        <div onclick="elegirPotenciaEtapa1(2,${potReqPR})" id="tarjeta2" style="flex:1;min-width:150px;padding:14px;background:#f0f4ff;border-radius:10px;border:2px solid #1F6FB2;cursor:pointer;transition:all 0.2s;">
-          <div style="font-size:0.65rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#1F6FB2;margin-bottom:6px;">Con PR</div>
-          <div style="font-size:1.05rem;font-weight:700;color:#1a1a1a;">${potReqPR.toFixed(2)} kW</div>
+        <div onclick="elegirPotenciaEtapa1(2,${potReqSDR})" id="tarjeta2" style="flex:1;min-width:150px;padding:14px;background:#f0f4ff;border-radius:10px;border:2px solid #1F6FB2;cursor:pointer;transition:all 0.2s;">
+          <div style="font-size:0.65rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#1F6FB2;margin-bottom:6px;">${sdrPct > 0 ? "Con SDR " + sdrPct + "%" : "Con PR"}</div>
+          <div style="font-size:1.05rem;font-weight:700;color:#1a1a1a;">${potReqSDR.toFixed(2)} kW</div>
           <div style="font-size:0.72rem;color:#555;margin-top:4px;">P_inv_min recomendada</div>
         </div>
-        <div onclick="elegirPotenciaEtapa1(3,${potReqSDR})" id="tarjeta3" style="flex:1;min-width:150px;padding:14px;background:#f0fff4;border-radius:10px;border:2px solid #00A651;cursor:pointer;transition:all 0.2s;">
-          <div style="font-size:0.65rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#00A651;margin-bottom:6px;">Con PR + SDR ${sdrPct}%</div>
-          <div style="font-size:1.05rem;font-weight:700;color:#1a1a1a;">${potReqSDR.toFixed(2)} kW</div>
-          <div style="font-size:0.72rem;color:#555;margin-top:4px;">Recomendada según sobredimensionamiento elegido</div>
-        </div>
       </div>
-      <div id="notaElegida" style="margin-top:12px;padding:10px 14px;background:#f0fff4;border-left:4px solid #00A651;border-radius:8px;font-size:0.83rem;color:#1a6b35;text-align:left;">
-        ✅ Usando <strong>${potReqSDR.toFixed(2)} kW</strong> (Con PR 80% + SDR ${sdrPct}%) — puedes cambiar la selección.
+      <div id="notaElegida" style="margin-top:12px;padding:10px 14px;background:#f0f4ff;border-left:4px solid #1F6FB2;border-radius:8px;font-size:0.83rem;color:#1a3a6b;text-align:left;">
+        
       </div>
       <div style="margin-top:10px;padding:12px 16px;background:#f0fff4;border-left:4px solid #00A651;border-radius:8px;font-size:0.85rem;color:#1a6b35;text-align:left;">
         Parámetros de dimensionamiento listos. Proceda a la selección de equipos.
@@ -636,8 +632,8 @@ function calcularDimensionamiento(){
   document.getElementById("resultadoDim").style.display = "block";
   document.getElementById("etapa2").style.display = "block";
   resetearSdrUI();
-  // Selección por defecto: opción 3 (Con PR 80% + SDR elegido), resaltada visualmente
-  elegirPotenciaEtapa1(3, potReqSDR);
+  // Selección por defecto: opción 2 (Con PR 80%), resaltada visualmente
+  elegirPotenciaEtapa1(2, potReqSDR);
   setTimeout(() => document.getElementById("etapa2").scrollIntoView({behavior:"smooth"}), 200);
 }
 function calcularSolar(){
@@ -653,7 +649,7 @@ function calcularSolar(){
   let hsp           = parseFloat(document.getElementById("hsp").value) || 0;
   let potenciaPanel = parseFloat(document.getElementById("potenciaPanel").value) || 0;
   let sdrPct        = parseInt(document.getElementById("sdrEtapa1").value) || 0;
-  let sdrVal        = obtenerSdrVal();
+  let sdrVal        = 1 + (sdrPct / 100);
   if(consumoMensual <= 0 || hsp <= 0 || potenciaPanel <= 0){
     document.getElementById("resultadoSolar").innerHTML = `
       <div class="bloque"><div class="bloqueTitulo">ERROR</div><p>Completa todos los campos obligatorios.</p></div>`;
