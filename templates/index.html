@@ -236,7 +236,7 @@ function filtrarModelos(){
   document.getElementById("fichaTecnica").style.display = "none";
   datos.forEach(d => {
     if(d.Marca === marcaSelect.value)
-      modeloSelect.innerHTML += <option value="${d.Modelo}">${d.Modelo}</option>;
+      modeloSelect.innerHTML += `<option value="${d.Modelo}">${d.Modelo}</option>`;
   });
 }
 function mostrarFicha(){
@@ -245,7 +245,7 @@ function mostrarFicha(){
   const inv = datos.find(d => d.Modelo === modelo);
   if(!inv) return;
   let contenido = `
-    ${inv["Imagen"] ? <div class="imgContainer"><img src="/static/img/${inv["Imagen"]}" class="imagenFicha" onerror="this.style.display='none'"></div> : ""}
+    ${inv["Imagen"] ? `<div class="imgContainer"><img src="/static/img/${inv["Imagen"]}" class="imagenFicha" onerror="this.style.display='none'"></div>` : ""}
     <div class="bloque">
       <div class="bloqueTitulo">INVERSOR</div>
       <table class="tablaTecnica">
@@ -280,7 +280,7 @@ function filtrarModelosMod(){
   document.getElementById("fichaModulo").style.display = "none";
   datos_mod.forEach(m => {
     if(m["Marca"] === marca)
-      sel.innerHTML += <option value="${m["Modelo"]}">${m["Modelo"]}</option>;
+      sel.innerHTML += `<option value="${m["Modelo"]}">${m["Modelo"]}</option>`;
   });
 }
 function mostrarFichaMod(){
@@ -289,7 +289,7 @@ function mostrarFichaMod(){
   let mod = datos_mod.find(m => m["Modelo"] === modelo);
   if(!mod) return;
   let contenido = `
-    ${mod["Imagen"] ? <div class="imgContainer"><img src="/static/img/${mod["Imagen"]}" class="imagenFicha" onerror="this.style.display='none'"></div> : ""}
+    ${mod["Imagen"] ? `<div class="imgContainer"><img src="/static/img/${mod["Imagen"]}" class="imagenFicha" onerror="this.style.display='none'"></div>` : ""}
     <div class="bloque">
       <div class="bloqueTitulo">MÓDULO</div>
       <table class="tablaTecnica">
@@ -312,7 +312,7 @@ document.getElementById("buscador").addEventListener("keypress", function(e){
     let texto = this.value.toLowerCase();
     let resultado = datos.find(d => (d.Modelo||"").toLowerCase().includes(texto));
     if(resultado){
-      modeloSelect.innerHTML = <option value="${resultado.Modelo}" selected>${resultado.Modelo}</option>;
+      modeloSelect.innerHTML = `<option value="${resultado.Modelo}" selected>${resultado.Modelo}</option>`;
       mostrarFicha();
     }
   }
@@ -323,7 +323,7 @@ document.getElementById("buscadorMod").addEventListener("keypress", function(e){
     let resultado = datos_mod.find(m => (m["Modelo"]||"").toLowerCase().includes(texto));
     if(resultado){
       document.getElementById("modeloMod").innerHTML =
-        <option value="${resultado["Modelo"]}" selected>${resultado["Modelo"]}</option>;
+        `<option value="${resultado["Modelo"]}" selected>${resultado["Modelo"]}</option>`;
       mostrarFichaMod();
     }
   }
@@ -350,7 +350,7 @@ function notaTecnica(tipo, msg){
     info:  "background:#f0f4ff;border-left:3px solid #1F6FB2;color:#1a3a6b;"
   };
   let iconos = { error:"❌", warn:"⚠️", ok:"✅", info:"ℹ️" };
-  return <div style="margin-top:6px;padding:6px 10px;border-radius:6px;font-size:0.78rem;font-weight:600;${estilos[tipo]}">${iconos[tipo]} ${msg}</div>;
+  return `<div style="margin-top:6px;padding:6px 10px;border-radius:6px;font-size:0.78rem;font-weight:600;${estilos[tipo]}">${iconos[tipo]} ${msg}</div>`;
 }
 function obtenerSdrVal(){
   let pct = parseInt(document.getElementById("sdrEtapa1").value) || 0;
@@ -380,7 +380,7 @@ function filtrarModelosCalc(){
   modSeleccionadoData = null;
   datos_mod.forEach(m => {
     if(m["Marca"] === marca)
-      sel.innerHTML += <option value="${m["Modelo"]}">${m["Modelo"]}</option>;
+      sel.innerHTML += `<option value="${m["Modelo"]}">${m["Modelo"]}</option>`;
   });
 }
 function alElegirModulo(){
@@ -392,7 +392,7 @@ function alElegirModulo(){
   document.getElementById("potenciaPanel").value = mod["Potencia (W)"] || "";
   document.getElementById("buscadorCalcMod").value = "";
   document.getElementById("modSeleccionado").innerHTML =
-    ✅ ${mod["Marca"].charAt(0).toUpperCase()+mod["Marca"].slice(1)} — ${mod["Modelo"]} · ${mod["Potencia (W)"]}W;
+    `✅ ${mod["Marca"].charAt(0).toUpperCase()+mod["Marca"].slice(1)} — ${mod["Modelo"]} · ${mod["Potencia (W)"]}W`;
   document.getElementById("modSeleccionado").style.display = "block";
 }
 let invSeleccionadoData = null;
@@ -406,7 +406,7 @@ function filtrarModelosInvCalc(){
   resetearSdrUI();
   datos.forEach(d => {
     if(d.Marca === marca)
-      sel.innerHTML += <option value="${d.Modelo}">${d.Modelo}</option>;
+      sel.innerHTML += `<option value="${d.Modelo}">${d.Modelo}</option>`;
   });
 }
 function alElegirInversorSelect(){
@@ -418,7 +418,7 @@ function alElegirInversorSelect(){
   let potInvKw = parsearW(inv["Potencia Nominal CA"]) / 1000;
   document.getElementById("buscadorCalcInv").value = "";
   document.getElementById("invSeleccionado").innerHTML =
-    ✅ ${inv["Marca"].charAt(0).toUpperCase()+inv["Marca"].slice(1)} — ${inv["Modelo"]} · ${potInvKw.toFixed(2)} kW;
+    `✅ ${inv["Marca"].charAt(0).toUpperCase()+inv["Marca"].slice(1)} — ${inv["Modelo"]} · ${potInvKw.toFixed(2)} kW`;
   document.getElementById("invSeleccionado").style.display = "block";
   alElegirInversor(inv);
 }
@@ -452,7 +452,7 @@ function seleccionarMod(modelo){
   filtrarModelosCalc();
   setTimeout(() => { document.getElementById("calcModeloMod").value = modelo; }, 50);
   document.getElementById("modSeleccionado").innerHTML =
-    ✅ ${mod["Marca"].charAt(0).toUpperCase()+mod["Marca"].slice(1)} — ${mod["Modelo"]} · ${mod["Potencia (W)"]}W;
+    `✅ ${mod["Marca"].charAt(0).toUpperCase()+mod["Marca"].slice(1)} — ${mod["Modelo"]} · ${mod["Potencia (W)"]}W`;
   document.getElementById("modSeleccionado").style.display = "block";
 }
 function autocompletarInv(texto){
@@ -486,7 +486,7 @@ function seleccionarInv(modelo){
   setTimeout(() => { document.getElementById("calcModeloInv").value = modelo; }, 50);
   let potInvKw = parsearW(inv["Potencia Nominal CA"]) / 1000;
   document.getElementById("invSeleccionado").innerHTML =
-    ✅ ${inv["Marca"].charAt(0).toUpperCase()+inv["Marca"].slice(1)} — ${inv["Modelo"]} · ${potInvKw.toFixed(2)} kW;
+    `✅ ${inv["Marca"].charAt(0).toUpperCase()+inv["Marca"].slice(1)} — ${inv["Modelo"]} · ${potInvKw.toFixed(2)} kW`;
   document.getElementById("invSeleccionado").style.display = "block";
   alElegirInversor(inv);
 }
@@ -510,14 +510,18 @@ function alElegirInversor(invData){
   let potReqConPR = potenciaElegidaEtapa1;
   let potInvW  = parsearW(invData["Potencia Nominal CA"]);
   let potInvKw = potInvW / 1000;
-  let labelPotReq  = "Potencia requerida (según selección Etapa 1)";
-  let estadoColor = potInvKw >= potReqConPR ? "#00A651" : "var(--rojo)";
-  let estadoTexto = potInvKw >= potReqConPR
+  /* Usar Máxima Potencia FV del Excel; si no existe calcular 150% de nominal */
+  let pfvMaxInvW  = parsearW(invData["Máxima Potencia FV"]);
+  if(!pfvMaxInvW || pfvMaxInvW <= 0) pfvMaxInvW = potInvW * 1.50;
+  let pfvMaxInvKw = pfvMaxInvW / 1000;
+  let labelPotReq = "Potencia requerida (según selección Etapa 1)";
+  let estadoColor = pfvMaxInvKw >= potReqConPR ? "#00A651" : "var(--rojo)";
+  let estadoTexto = pfvMaxInvKw >= potReqConPR
     ? "✅ El inversor cumple con la potencia requerida"
     : "⚠️ El inversor NO cumple — capacidad insuficiente";
-  let ratio = potInvKw > 0 ? potInvKw / potReqConPR : 0;
+  let ratio = pfvMaxInvKw > 0 ? pfvMaxInvKw / potReqConPR : 0;
   let notaComp = ratio > 10
-    ? notaTecnica("warn", Inversor sobredimensionado para el consumo indicado (ratio ${ratio.toFixed(1)}:1). Verifique que la selección corresponde al proyecto correcto.)
+    ? notaTecnica("warn", `Inversor sobredimensionado para el consumo indicado (ratio ${ratio.toFixed(1)}:1). Verifique que la selección corresponde al proyecto correcto.`)
     : "";
   document.getElementById("infoComparacion").innerHTML = `
     <p style="font-size:0.72rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#aaa;margin-bottom:12px;">Comparación de potencias</p>
@@ -527,8 +531,8 @@ function alElegirInversor(invData){
         <td style="padding:8px 0;font-size:0.85rem;font-weight:700;text-align:right;">${potReqConPR.toFixed(2)} kW</td>
       </tr>
       <tr>
-        <td style="padding:8px 0;font-size:0.85rem;color:#888;">Potencia nominal del inversor</td>
-        <td style="padding:8px 0;font-size:0.85rem;font-weight:700;text-align:right;">${potInvKw > 0 ? potInvKw.toFixed(2) + " kW" : "No disponible"}</td>
+        <td style="padding:8px 0;font-size:0.85rem;color:#888;">Potencia máxima FV del inversor</td>
+        <td style="padding:8px 0;font-size:0.85rem;font-weight:700;text-align:right;">${pfvMaxInvKw.toFixed(2)} kW</td>
       </tr>
     </table>
     <p style="margin-top:12px;font-size:0.85rem;font-weight:600;color:${estadoColor};">${estadoTexto}</p>
@@ -558,7 +562,7 @@ function elegirPotenciaEtapa1(opcion, valor){
     let card = document.getElementById("tarjeta" + i);
     if(!card) continue;
     if(i === opcion){
-      card.style.boxShadow = 0 0 0 3px ${colores[i]}66;
+      card.style.boxShadow = `0 0 0 3px ${colores[i]}66`;
       card.style.transform = "scale(1.03)";
       card.style.opacity = "1";
     } else {
@@ -570,10 +574,7 @@ function elegirPotenciaEtapa1(opcion, valor){
   let nota = document.getElementById("notaElegida");
   if(nota){
     let sdrActual = parseInt(document.getElementById("sdrEtapa1").value) || 0;
-    let etiqueta = nombres[opcion];
-    if(opcion !== 1 && sdrActual > 0){
-      etiqueta += " · SDR " + sdrActual + "%";
-    }
+    let etiqueta = (opcion !== 1 && sdrActual > 0) ? "SDR " + sdrActual + "%" : nombres[opcion];
     nota.innerHTML = "✅ Usando <strong>" + valor.toFixed(2) + " kW</strong> (" + etiqueta + ") — seleccionado.";
   }
   // Si ya hay un inversor elegido en Etapa 2, recalcular la comparación con la nueva selección
@@ -679,9 +680,10 @@ function calcularSolar(){
   let invData  = invSeleccionadoData;
   let potInvW  = parsearW(invData["Potencia Nominal CA"]);
   let potInvKw = potInvW / 1000;
-  let pfvMaxInvW2  = parsearW(invData["Máxima Potencia FV"]);
-  let pfvMaxW  = pfvMaxInvW2 > 0 ? pfvMaxInvW2 : potInvW * 1.50;
-  let potFvObjetivoW  = potReqW;
+  /* Leer P_FV_max del Excel; si no existe usar 150% de potencia nominal */
+  let pfvMaxW  = parsearW(invData["Máxima Potencia FV"]);
+  if(!pfvMaxW || pfvMaxW <= 0) pfvMaxW = potInvW * 1.50;
+  let potFvObjetivoW  = potReqW * sdrVal;
   let potFvObjetivoKw = potFvObjetivoW / 1000;
   let superaPfvMax    = potFvObjetivoW > pfvMaxW;
   let modulosExactos  = potFvObjetivoW / potenciaPanel;
@@ -694,13 +696,13 @@ function calcularSolar(){
   let difSdrA    = Math.abs(sdrRealA - sdrPct);
   let notasA = "";
   if(potInstAW > pfvMaxW)
-    notasA += notaTecnica("error", P_FV instalada (${potInstAKw.toFixed(2)} kW) supera P_FV_max (${(pfvMaxW/1000).toFixed(2)} kW). Riesgo de daño al inversor.);
+    notasA += notaTecnica("error", `P_FV instalada (${potInstAKw.toFixed(2)} kW) supera P_FV_max (${(pfvMaxW/1000).toFixed(2)} kW). Riesgo de daño al inversor.`);
   else if(sdrRealA > 40)
-    notasA += notaTecnica("warn", SDR real (${sdrRealA.toFixed(1)}%) supera el 40%. Riesgo elevado de clipping.);
+    notasA += notaTecnica("warn", `SDR real (${sdrRealA.toFixed(1)}%) supera el 40%. Riesgo elevado de clipping.`);
   else
-    notasA += notaTecnica("ok", P_FV instalada dentro del rango permitido.);
+    notasA += notaTecnica("ok", `P_FV instalada dentro del rango permitido.`);
   if(difSdrA > 5)
-    notasA += notaTecnica("info", SDR real (${sdrRealA.toFixed(1)}%) difiere ${difSdrA.toFixed(1)}% del SDR propuesto por redondeo.);
+    notasA += notaTecnica("info", `SDR real (${sdrRealA.toFixed(1)}%) difiere ${difSdrA.toFixed(1)}% del SDR propuesto por redondeo.`);
   let modB       = Math.ceil(modulosExactos);
   let potInstBW  = modB * potenciaPanel;
   let potInstBKw = potInstBW / 1000;
@@ -710,13 +712,13 @@ function calcularSolar(){
   let difSdrB    = Math.abs(sdrRealB - sdrPct);
   let notasB = "";
   if(potInstBW > pfvMaxW)
-    notasB += notaTecnica("error", P_FV instalada (${potInstBKw.toFixed(2)} kW) supera P_FV_max (${(pfvMaxW/1000).toFixed(2)} kW). Riesgo de daño al inversor.);
+    notasB += notaTecnica("error", `P_FV instalada (${potInstBKw.toFixed(2)} kW) supera P_FV_max (${(pfvMaxW/1000).toFixed(2)} kW). Riesgo de daño al inversor.`);
   else if(sdrRealB > 40)
-    notasB += notaTecnica("warn", SDR real (${sdrRealB.toFixed(1)}%) supera el 40%. Riesgo elevado de clipping.);
+    notasB += notaTecnica("warn", `SDR real (${sdrRealB.toFixed(1)}%) supera el 40%. Riesgo elevado de clipping.`);
   else
-    notasB += notaTecnica("ok", P_FV instalada dentro del rango permitido.);
+    notasB += notaTecnica("ok", `P_FV instalada dentro del rango permitido.`);
   if(difSdrB > 5)
-    notasB += notaTecnica("info", SDR real (${sdrRealB.toFixed(1)}%) difiere ${difSdrB.toFixed(1)}% del SDR propuesto por redondeo.);
+    notasB += notaTecnica("info", `SDR real (${sdrRealB.toFixed(1)}%) difiere ${difSdrB.toFixed(1)}% del SDR propuesto por redondeo.`);
   let modData = modSeleccionadoData;
   let nombreMarcaMod = modData ? modData.Marca.charAt(0).toUpperCase() + modData.Marca.slice(1) : "";
   let nombreMarcaInv = invData ? invData.Marca.charAt(0).toUpperCase() + invData.Marca.slice(1) : "";
@@ -730,9 +732,9 @@ function calcularSolar(){
     </td></tr>` : "";
   let notasGenerales = "";
   if(superaPfvMax)
-    notasGenerales += notaTecnica("error", P_FV objetivo (${potFvObjetivoKw.toFixed(2)} kW) supera P_FV_max (${(pfvMaxW/1000).toFixed(2)} kW). Reduzca el SDR o seleccione un inversor mayor.);
+    notasGenerales += notaTecnica("error", `P_FV objetivo (${potFvObjetivoKw.toFixed(2)} kW) supera P_FV_max (${(pfvMaxW/1000).toFixed(2)} kW). Reduzca el SDR o seleccione un inversor mayor.`);
   if(potInvKw > 0 && potInvKw / potReqConPR > 10)
-    notasGenerales += notaTecnica("warn", El inversor (${potInvKw.toFixed(2)} kW) es significativamente mayor a la potencia requerida (${potReqConPR.toFixed(2)} kW). Verifique la selección.);
+    notasGenerales += notaTecnica("warn", `El inversor (${potInvKw.toFixed(2)} kW) es significativamente mayor a la potencia requerida (${potReqConPR.toFixed(2)} kW). Verifique la selección.`);
   document.getElementById("resultadoSolar").innerHTML = `
     <div class="bloque" id="bloqueResultado" style="background:white;color:#1a1a1a;">
       <div class="bloqueTitulo">RESULTADOS</div>
@@ -742,8 +744,7 @@ function calcularSolar(){
         <tr><th>Potencia requerida</th><td><strong>${potReqConPR.toFixed(2)} kW</strong></td></tr>
         <tr><th>Potencia nominal del inversor</th><td>${potInvKw > 0 ? potInvKw.toFixed(2) + " kW" : "—"}</td></tr>
         <tr><th>P_FV_max (150% × P_nom)</th><td>${(pfvMaxW/1000).toFixed(2)} kW</td></tr>
-        <tr style="background:#f0f4ff;"><th>SDR aplicado (fotovoltaico)</th><td>${sdrPct > 0 ? sdrPct + "%" : "No aplicado"} <span style="font-size:0.75rem;color:#888;font-weight:400;">— definido en Etapa 1</span></td></tr>
-        <tr><th>Potencia FV objetivo</th><td><strong>${potFvObjetivoKw.toFixed(2)} kW</strong></td></tr>
+
         <tr><th>Módulos exactos</th><td><strong>${modulosExactos.toFixed(2)} módulos</strong></td></tr>
         ${filaModulo}
         ${filaInversor}
@@ -785,8 +786,8 @@ function calcularSolar(){
   setTimeout(() => document.getElementById("resultadoSolar").scrollIntoView({behavior:"smooth"}), 150);
   _mpptData = { modA, modB };
   let opcionesEscenario = "";
-  if(!bloqA) opcionesEscenario += <button class="btnSub" onclick="calcularMPPT('A')" id="btnEscA">Usar A (${modA} módulos)</button>;
-  if(!bloqB) opcionesEscenario += <button class="btnSub" onclick="calcularMPPT('B')" id="btnEscB" style="margin-left:8px;">Usar B (${modB} módulos)</button>;
+  if(!bloqA) opcionesEscenario += `<button class="btnSub" onclick="calcularMPPT('A')" id="btnEscA">Usar A (${modA} módulos)</button>`;
+  if(!bloqB) opcionesEscenario += `<button class="btnSub" onclick="calcularMPPT('B')" id="btnEscB" style="margin-left:8px;">Usar B (${modB} módulos)</button>`;
   document.getElementById("selectorEscenario").innerHTML = `
     <div style="padding:16px 20px;background:#f8f9fa;border:1.5px solid var(--borde);border-radius:12px;text-align:left;">
       <p style="font-size:0.72rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#aaa;margin-bottom:12px;">Con cual escenario desea calcular el arreglo MPPT?</p>
@@ -808,7 +809,7 @@ function calcularMPPT(escenario){
   let modData  = modSeleccionadoData;
   let nModulos = escenario === "A" ? _mpptData.modA : _mpptData.modB;
   if(!invData || !modData){
-    document.getElementById("resultadoMPPT").innerHTML = <div class="bloque"><div class="bloqueTitulo">ERROR</div><p>Selecciona módulo e inversor primero.</p></div>;
+    document.getElementById("resultadoMPPT").innerHTML = `<div class="bloque"><div class="bloqueTitulo">ERROR</div><p>Selecciona módulo e inversor primero.</p></div>`;
     return;
   }
   let Voc = parseFloat(modData["Voc (V)"]) || 0;
@@ -823,7 +824,7 @@ function calcularMPPT(escenario){
   let modsSerie  = Voc > 0 ? Math.floor(VmpptMax / Voc) : 0;
   let VstringMax = modsSerie * Voc;
   let notaVoc = notaTecnica("info",
-    Calculo basado en Voc del módulo (${Voc} V). Vstring = N x Voc <= Vmppt_max (${VmpptMax} V).);
+    `Calculo basado en Voc del módulo (${Voc} V). Vstring = N x Voc <= Vmppt_max (${VmpptMax} V).`);
   let modRestantes = nModulos;
   let totalDistribuidos = 0;
   for(let i = 0; i < nMPPT; i++){
@@ -854,7 +855,7 @@ function calcularMPPT(escenario){
         </span>
       </div>` : "";
   let avisoSinAsignar = modulosSinAsignar > 0
-    ? notaTecnica("warn", ${modulosSinAsignar} módulo(s) sin asignar. Verifique los límites de corriente y voltaje por MPPT.)
+    ? notaTecnica("warn", `${modulosSinAsignar} módulo(s) sin asignar. Verifique los límites de corriente y voltaje por MPPT.`)
     : "";
   document.getElementById("resultadoMPPT").innerHTML = `
     <div class="bloque" id="bloqueResultadoMPPT" style="background:white;color:#1a1a1a;">
@@ -938,4 +939,4 @@ function toggleSoporte(){
 }
 </script>
 </body>
-</html
+</html>
