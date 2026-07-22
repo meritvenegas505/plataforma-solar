@@ -550,16 +550,14 @@ function alElegirInversor(invData){
 function elegirPotenciaEtapa1(opcion, valor){
   potenciaElegidaEtapa1 = valor;
   const nombres = {
-    1: "Sin PR · Sin SDR",
-    2: "Con PR",
-    3: "Con PR 80% + SDR"
+    1: "Sin SDR",
+    2: "Con SDR"
   };
   const colores = {
     1: "var(--borde)",
-    2: "#1F6FB2",
-    3: "#00A651"
+    2: "#1F6FB2"
   };
-  for(let i = 1; i <= 3; i++){
+  for(let i = 1; i <= 2; i++){
     let card = document.getElementById("tarjeta" + i);
     if(!card) continue;
     if(i === opcion){
@@ -615,12 +613,12 @@ function calcularDimensionamiento(){
       <div style="margin-top:12px;font-size:0.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#aaa;margin-bottom:6px;">Selecciona la potencia con la que deseas continuar</div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px;">
         <div onclick="elegirPotenciaEtapa1(1,${potReq})" id="tarjeta1" style="flex:1;min-width:150px;padding:14px;background:#f8f9fa;border-radius:10px;border:2px solid var(--borde);cursor:pointer;transition:all 0.2s;">
-          <div style="font-size:0.65rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#aaa;margin-bottom:6px;">Sin PR · Sin SDR</div>
+          <div style="font-size:0.65rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#aaa;margin-bottom:6px;">Sin SDR</div>
           <div style="font-size:1.05rem;font-weight:700;color:#1a1a1a;">${potReq.toFixed(2)} kW</div>
           <div style="font-size:0.72rem;color:#aaa;margin-top:4px;">Condiciones ideales</div>
         </div>
         <div onclick="elegirPotenciaEtapa1(2,${potReqSDR})" id="tarjeta2" style="flex:1;min-width:150px;padding:14px;background:#f0f4ff;border-radius:10px;border:2px solid #1F6FB2;cursor:pointer;transition:all 0.2s;">
-          <div style="font-size:0.65rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#1F6FB2;margin-bottom:6px;">${sdrPct > 0 ? "Con SDR " + sdrPct + "%" : "Con PR"}</div>
+          <div style="font-size:0.65rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#1F6FB2;margin-bottom:6px;">${sdrPct > 0 ? "Con SDR " + sdrPct + "%" : "Sin SDR"}</div>
           <div style="font-size:1.05rem;font-weight:700;color:#1a1a1a;">${potReqSDR.toFixed(2)} kW</div>
           <div style="font-size:0.72rem;color:#555;margin-top:4px;">P_inv_min recomendada</div>
         </div>
@@ -635,7 +633,7 @@ function calcularDimensionamiento(){
   document.getElementById("resultadoDim").style.display = "block";
   document.getElementById("etapa2").style.display = "block";
   resetearSdrUI();
-  // Selección por defecto: opción 2 (Con PR 80%), resaltada visualmente
+  // Selección por defecto: opción 2 (Con SDR), resaltada visualmente
   elegirPotenciaEtapa1(2, potReqSDR);
   setTimeout(() => document.getElementById("etapa2").scrollIntoView({behavior:"smooth"}), 200);
 }
@@ -691,32 +689,26 @@ function calcularSolar(){
   let sdrRealA   = potReqW > 0 ? ((potInstAW - potReqW) / potReqW) * 100 : 0;
   let genA       = (potInstAKw * hsp * 30).toFixed(0);
   let bloqA      = sdrRealA > 50 || potInstAW > pfvMaxW;
-  let difSdrA    = Math.abs(sdrRealA - sdrPct);
   let notasA = "";
   if(potInstAW > pfvMaxW)
     notasA += notaTecnica("error", `P_FV instalada (${potInstAKw.toFixed(2)} kW) supera P_FV_max (${(pfvMaxW/1000).toFixed(2)} kW). Riesgo de daño al inversor.`);
   else if(sdrRealA > 40)
     notasA += notaTecnica("warn", `SDR real (${sdrRealA.toFixed(1)}%) supera el 40%. Riesgo elevado de clipping.`);
   else
-    notasA += notaTecnica("ok", `..`);
-  if(difSdrA > 5)
-    notasA += notaTecnica("info", `.`);
+    notasA += notaTecnica("ok", `P_FV instalada dentro del rango permitido.`);
   let modB       = Math.ceil(modulosExactos);
   let potInstBW  = modB * potenciaPanel;
   let potInstBKw = potInstBW / 1000;
   let sdrRealB   = potReqW > 0 ? ((potInstBW - potReqW) / potReqW) * 100 : 0;
   let genB       = (potInstBKw * hsp * 30).toFixed(0);
   let bloqB      = sdrRealB > 50 || potInstBW > pfvMaxW;
-  let difSdrB    = Math.abs(sdrRealB - sdrPct);
   let notasB = "";
   if(potInstBW > pfvMaxW)
     notasB += notaTecnica("error", `P_FV instalada (${potInstBKw.toFixed(2)} kW) supera P_FV_max (${(pfvMaxW/1000).toFixed(2)} kW). Riesgo de daño al inversor.`);
   else if(sdrRealB > 40)
     notasB += notaTecnica("warn", `SDR real (${sdrRealB.toFixed(1)}%) supera el 40%. Riesgo elevado de clipping.`);
   else
-    notasB += notaTecnica("ok", `.`);
-  if(difSdrB > 5)
-    notasB += notaTecnica("info", `.`);
+    notasB += notaTecnica("ok", `P_FV instalada dentro del rango permitido.`);
   let modData = modSeleccionadoData;
   let nombreMarcaMod = modData ? modData.Marca.charAt(0).toUpperCase() + modData.Marca.slice(1) : "";
   let nombreMarcaInv = invData ? invData.Marca.charAt(0).toUpperCase() + invData.Marca.slice(1) : "";
